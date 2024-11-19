@@ -11,7 +11,7 @@ from random import randint
 # Initiation de pygame et de la fenêtre de jeu
 pygame.init()
 pygame.key.set_repeat(30, 30)
-fenetre = pygame.display.set_mode((800, 450), RESIZABLE)
+fenetre = pygame.display.set_mode((1280, 649), RESIZABLE)
 liste_sprite = pygame.sprite.LayeredUpdates()
 
 
@@ -43,7 +43,7 @@ def ajouter_texte(police_nom, taille, texte_a_afficher):
     liste_sprite.add(texte)
     return texte
 
-def poisson_disc_sampling(distance_minimum, hauteur, largeur, max_points, k=30):
+def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
     points = []
     taille_de_grille = distance_minimum / math.sqrt(2)
     largeur_de_grille = math.ceil(largeur / taille_de_grille)
@@ -81,7 +81,7 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, max_points, k=30):
     ajouter_point(point_initial)
     liste_active.append(point_initial)
 
-    while liste_active and len(points) < max_points:
+    while liste_active:
         point_actuel = random.choice(liste_active)
         trouve = False
 
@@ -110,7 +110,8 @@ class Obstacles:
 
     # Fonction permettant de créer une distribution uniforme en apparence aléatoire dans une sphère
     def distribution(self, nombre_de_points, fraction, rayon):
-        points = poisson_disc_sampling(75, fenetre.get_rect().height, fenetre.get_rect().width, 100)
+        points = poisson_disc_sampling(80, 649, 1280)
+        print(len(points))
         return points
         #version utilisant la distribution en spirale
         #points = []  # Array contenant une liste de points dans le plan
@@ -157,8 +158,8 @@ class Bunker(Obstacles):
 NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
-NOMBRE_ARBRES = 10
-NOMBRE_BUNKERS = 10
+NOMBRE_ARBRES = 0
+NOMBRE_BUNKERS = 0
 
 obstacle1 = Obstacles(0, 0)  # TODO: essayer de créer une classe abstraite/virtuelle
 points = obstacle1.distribution(NOMBRE_DE_POINTS, PHI, RAYON)
@@ -168,7 +169,7 @@ points = obstacle1.distribution(NOMBRE_DE_POINTS, PHI, RAYON)
 # <editor-fold desc="Fonctions spécifiques au jeu">
 # Fonction créant une instance d'arbre un certain nombre de fois aléatoirement basé sur une liste de points du plan
 def generation_du_terrain(liste_de_points):
-    if (NOMBRE_ARBRES + NOMBRE_BUNKERS) <= len(liste_de_points):
+    if NOMBRE_ARBRES <= len(liste_de_points):
         for i in range(NOMBRE_ARBRES):
             index = randint(0, len(liste_de_points) - 1)
             x, y = liste_de_points[index]
@@ -180,24 +181,8 @@ def generation_du_terrain(liste_de_points):
             arbre_instance = Arbre(x_pos, y_pos)
             liste_de_points.remove(liste_de_points[index])
 
-        for i in range(NOMBRE_BUNKERS):
-            index = randint(0, len(liste_de_points) - 1)
-            x, y = liste_de_points[index]
-            x_pos = fenetre.get_rect().centerx - x * 1.5
-            y_pos = fenetre.get_rect().centery - y
-            x_pos = max(0, min(fenetre.get_width(), x_pos))  # Clamp x position
-            y_pos = max(0, min(fenetre.get_height(), y_pos))  # Clamp y position
-            bunker_instance = Bunker(x_pos, y_pos)
-            liste_de_points.remove(liste_de_points[index])
-
     else:
-        print_exception("More obstacles are instanced than there are points available.")
-
-
-
-
-
-
+        print("More obstacles are instanced than there are points available.")
 
 # </editor-fold>
 
@@ -210,8 +195,9 @@ continuer = True
 # <editor-fold desc="Boucle de jeu">
 while continuer:
     liste_sprite.draw(fenetre)
+    for point in points:
+        pygame.draw.circle(fenetre, (255, 0, 0), (int(point[0]), int(point[1])), 25)
     pygame.display.flip()
-
     for event in pygame.event.get():
         if event.type == QUIT:
             continuer = False
