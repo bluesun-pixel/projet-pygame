@@ -1,6 +1,8 @@
+from random import random, randint
 
 import pygame
 from pygame.locals import *
+import math
 
 pygame.init()
 pygame.key.set_repeat(30, 30)
@@ -34,6 +36,36 @@ def ajouter_texte(police_nom, taille, texte_a_afficher):
 
 continuer = True
 
+class Obstacles:
+    def __init__(self):
+        return
+    def distribution(self, nombre_de_points, fraction, rayon):
+        points = []
+
+        for i in range(nombre_de_points):
+            distance = pow((i/(nombre_de_points -1)), .5) * rayon
+            angle  = i * fraction * 2 * math.pi
+            x = math.cos(angle) * distance
+            y = math.sin(angle) * distance
+            points.append([x,y])
+
+        return points
+nombre_obstacle = 10
+liste_aléatoire = []
+
+terrain = ajouter_sprite("Images/grass_texture.jpg", 0,0)
+obstacle1 = Obstacles()
+
+points = obstacle1.distribution(500, 1.618, 350)
+
+for i in range(nombre_obstacle):
+    liste_aléatoire.append(randint(0, len(points)-1))
+
+for nombre in liste_aléatoire:
+    cercle = ajouter_sprite("Images/img_2.png", fenetre
+                            .get_rect().centerx + points[nombre][0]*3,fenetre
+                            .get_rect().centery + points[nombre][1])
+    points.remove([points[nombre][0], points[nombre][1]])
 
 while continuer:
     liste_sprite.draw(fenetre)
