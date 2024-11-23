@@ -33,12 +33,12 @@ def ajouter_texte(police_nom, taille, texte_a_afficher):
 continuer = True
 
 class Balle:
-    def __init__(self, frottement, balle_x, balle_y):
+    def __init__(self, balle_x, balle_y):
         self.balle_x = balle_x
         self.balle_y = balle_y
         self.direction = [1, 1]
-        self.frottement = 0.95
-        self.vitesse = 20
+        self.frottement = 0.9888
+        self.vitesse = 5
 
     def deplacer_balle(self):
         if self.vitesse >= 0.1:
@@ -48,14 +48,15 @@ class Balle:
         else:
             self.vitesse = 0
 
-balle_golf = Balle(0.98, 10, 10)
+balle_golf = Balle( 10, 10)
 
 while continuer:
+    fenetre.fill((0,0,0))
     liste_sprite.draw(fenetre)
     balle_golf.deplacer_balle()
+    pygame.draw.circle(fenetre, (100, 100, 100), (int(balle_golf.balle_x), int(balle_golf.balle_y)), 15)
     pygame.display.flip()
 
     for event in pygame.event.get():
-        pygame.draw.circle(fenetre, (100, 100, 100), (int(balle_golf.balle_x), int(balle_golf.balle_y)), 15)
         if event.type == QUIT:
             continuer = False
