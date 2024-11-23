@@ -145,10 +145,12 @@ RAYON = 350
 NOMBRE_ARBRES = 20
 NOMBRE_BUNKERS = 20
 DISTANCE_MINIMUM_TEE_DRAPEAU = 800
+VITESSE_ANGULAIRE = .002
 
 #défintion des variables et instances de classe
 obstacle1 = Obstacles(0, 0)  # TODO: essayer de créer une classe abstraite/virtuelle
 points = poisson_disc_sampling(90, 649, 1280, 50)
+alpha = 0 #angle en degré représentant la direction de visée
 
 # </editor-fold>
 
@@ -186,8 +188,7 @@ def generation_du_terrain(liste_de_points):
     liste_de_points.remove(liste_de_points[tee_index])
 
     optimal_distance = distance(tee, drapeau)
-    while optimal_distance < DISTANCE_MINIMUM_TEE_DRAPEAU and len(liste_de_points) >1:
-        print("loop")
+    while optimal_distance < DISTANCE_MINIMUM_TEE_DRAPEAU and len(liste_de_points) >2:
         tee_index_prime = randint(0, len(liste_de_points) - 1)
         tee_prime = liste_de_points[tee_index_prime]
         new_distance = distance(tee_prime, drapeau)
@@ -197,7 +198,7 @@ def generation_du_terrain(liste_de_points):
             optimal_distance = new_distance
         else:
             print("point discarded")
-        liste_de_points.remove(liste_de_points[tee_index])
+        liste_de_points.remove(liste_de_points[tee_index_prime])
 
     return arbres, bunkers, drapeau, tee
 
@@ -213,6 +214,7 @@ continuer = True
 # <editor-fold desc="Boucle de jeu">
 while continuer:
     liste_sprite.draw(fenetre)
+
     for point in points:
         pygame.draw.circle(fenetre, (100, 100, 100), (int(point[0]), int(point[1])), 10)
     for arbre in liste_arbres:
@@ -221,7 +223,20 @@ while continuer:
         pygame.draw.circle(fenetre, (194, 178, 128), (int(bunker.pos_x), int(bunker.pos_y)), 25)
     pygame.draw.circle(fenetre, (255, 0, 0), (int(drapeau_position[0]), int(drapeau_position[1])), 25)
     pygame.draw.circle(fenetre, (0, 0, 190), (int(tee_position[0]), int(tee_position[1])), 25)
+
+    if alpha < 360:
+        alpha += VITESSE_ANGULAIRE
+    else:
+        alpha = 0
+
+    visee_x = tee_position[0] + math.cos(alpha) * 50
+    visee_y = tee_position[1] + math.sin(alpha) * 50
+
+    pygame.draw.circle(fenetre, (0, 0, 190), (int(visee_x), visee_y), 10)
+
+
     pygame.display.flip()
+
     for event in pygame.event.get():
         if event.type == QUIT:
             continuer = False
