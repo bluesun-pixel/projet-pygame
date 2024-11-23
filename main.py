@@ -1,3 +1,4 @@
+
 # <editor-fold desc="Initialisation et variables générales">
 import pygame
 from pygame.locals import *
@@ -134,6 +135,22 @@ class Bunker(Obstacles):
     def collision(self, balle):
         super().collision(balle)
         print("Oh non! Un bunker!")
+        
+class Balle:
+    def __init__(self, balle_x, balle_y):
+        self.balle_x = balle_x
+        self.balle_y = balle_y
+        self.direction = [1, 1]
+        self.frottement = 0.9888
+        self.vitesse = 5
+
+    def deplacer_balle(self):
+        if self.vitesse >= 0.1:
+            self.balle_x += self.vitesse * self.direction[0]
+            self.balle_y += self.vitesse * self.direction[1]
+            self.vitesse *= self.frottement
+        else:
+            self.vitesse = 0
 
 # </editor-fold>
 
@@ -149,6 +166,7 @@ DISTANCE_MINIMUM_TEE_DRAPEAU = 800
 #défintion des variables et instances de classe
 obstacle1 = Obstacles(0, 0)  # TODO: essayer de créer une classe abstraite/virtuelle
 points = poisson_disc_sampling(90, 649, 1280, 50)
+balle_golf = Balle( 10, 10)
 
 # </editor-fold>
 
@@ -212,7 +230,12 @@ continuer = True
 
 # <editor-fold desc="Boucle de jeu">
 while continuer:
+    fenetre.fill((0,0,0))
     liste_sprite.draw(fenetre)
+    
+    balle_golf.deplacer_balle()
+    pygame.draw.circle(fenetre, (100, 100, 100), (int(balle_golf.balle_x), int(balle_golf.balle_y)), 15)
+
     for point in points:
         pygame.draw.circle(fenetre, (100, 100, 100), (int(point[0]), int(point[1])), 10)
     for arbre in liste_arbres:
@@ -221,6 +244,7 @@ while continuer:
         pygame.draw.circle(fenetre, (194, 178, 128), (int(bunker.pos_x), int(bunker.pos_y)), 25)
     pygame.draw.circle(fenetre, (255, 0, 0), (int(drapeau_position[0]), int(drapeau_position[1])), 25)
     pygame.draw.circle(fenetre, (0, 0, 190), (int(tee_position[0]), int(tee_position[1])), 25)
+
     pygame.display.flip()
     for event in pygame.event.get():
         if event.type == QUIT:
