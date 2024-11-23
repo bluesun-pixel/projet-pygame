@@ -1,12 +1,9 @@
 # <editor-fold desc="Initialisation et variables générales">
-
-from traceback import print_exception
 import pygame
 from pygame.locals import *
 import math
 import random
 from random import randint
-
 
 # Initiation de pygame et de la fenêtre de jeu
 pygame.init()
@@ -43,6 +40,11 @@ def ajouter_texte(police_nom, taille, texte_a_afficher):
     liste_sprite.add(texte)
     return texte
 
+#fonction retournant la distance entre 2 points grâce à Pythagore
+def distance(p1, p2):
+    return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+#fonction permettant de générer n points uniformément sur une certaine surface, en respectant une distance minimum
 def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
     points = []
     taille_de_grille = distance_minimum / math.sqrt(2)
@@ -52,9 +54,6 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
 
     def est_contenu_dans_la_fenetre(x, y):
         return 0 <= x < largeur and 0 <= y < hauteur
-
-    def distance(p1, p2):
-        return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
     def est_valable(point):
         gx = int(point[0] / taille_de_grille)
@@ -108,22 +107,6 @@ class Obstacles:
         self.pos_x = pos_x
         self.pos_y = pos_y
 
-    # Fonction permettant de créer une distribution uniforme en apparence aléatoire dans une sphère
-    def distribution(self, nombre_de_points, fraction, rayon):
-        points = poisson_disc_sampling(80, 649, 1280)
-        print(len(points))
-        return points
-        #version utilisant la distribution en spirale
-        #points = []  # Array contenant une liste de points dans le plan
-        #for i in range(nombre_de_points):
-        #   distance = pow((i / (nombre_de_points - 1)), 0.5) * rayon
-        #   angle = i * fraction * 2 * math.pi
-        #   Conversion des coordonnées polaires à cartésiennes
-        #   x = math.cos(angle) * distance
-        #   y = math.sin(angle) * distance
-        #   points.append([x, y])
-        #return points
-
     # Réaction générale des obstacles à une collision --> effet sur la balle de façon générale
     def collision(self, balle):
         pass
@@ -133,7 +116,7 @@ class Arbre(Obstacles):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
         self.nom_image = "Images/img_2.png"
-        ajouter_sprite(self.nom_image, pos_x, pos_y)
+        #ajouter_sprite(self.nom_image, pos_x, pos_y)
 
     # Override de la fonction collision() du parent
     def collision(self, balle):
@@ -145,7 +128,7 @@ class Bunker(Obstacles):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
         self.nom_image = "Images/img.png"
-        ajouter_sprite(self.nom_image, pos_x, pos_y)
+        #ajouter_sprite(self.nom_image, pos_x, pos_y)
 
     # Override de la fonction collision() du parent
     def collision(self, balle):
@@ -155,40 +138,75 @@ class Bunker(Obstacles):
 # </editor-fold>
 
 # <editor-fold desc="Déclaration et définitions des constantes/variables spécifiques">
+#définition des constantes du jeu
 NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
-NOMBRE_ARBRES = 0
-NOMBRE_BUNKERS = 0
+NOMBRE_ARBRES = 20
+NOMBRE_BUNKERS = 20
+DISTANCE_MINIMUM_TEE_DRAPEAU = 800
 
+#défintion des variables et instances de classe
 obstacle1 = Obstacles(0, 0)  # TODO: essayer de créer une classe abstraite/virtuelle
-points = obstacle1.distribution(NOMBRE_DE_POINTS, PHI, RAYON)
+points = poisson_disc_sampling(90, 649, 1280, 50)
 
 # </editor-fold>
 
 # <editor-fold desc="Fonctions spécifiques au jeu">
-# Fonction créant une instance d'arbre un certain nombre de fois aléatoirement basé sur une liste de points du plan
+# Fonction générant le terrain basé sur une liste de points
 def generation_du_terrain(liste_de_points):
+    arbres = []
     if NOMBRE_ARBRES <= len(liste_de_points):
         for i in range(NOMBRE_ARBRES):
             index = randint(0, len(liste_de_points) - 1)
-            x, y = liste_de_points[index]
-            # Ensure the obstacles are placed within the screen bounds
-            x_pos = fenetre.get_rect().centerx - x * 1.5
-            y_pos = fenetre.get_rect().centery - y
-            x_pos = max(0, min(fenetre.get_width(), x_pos))  # Clamp x position
-            y_pos = max(0, min(fenetre.get_height(), y_pos))  # Clamp y position
+            x_pos, y_pos = liste_de_points[index]
             arbre_instance = Arbre(x_pos, y_pos)
+            arbres.append(arbre_instance)
             liste_de_points.remove(liste_de_points[index])
-
     else:
         print("More obstacles are instanced than there are points available.")
+
+    bunkers = []
+    if NOMBRE_BUNKERS <= len(liste_de_points):
+        for i in range(NOMBRE_BUNKERS):
+            index = randint(0, len(liste_de_points) - 1)
+            x_pos, y_pos = liste_de_points[index]
+            bunker_instance = Bunker(x_pos, y_pos)
+            bunkers.append(bunker_instance)
+            liste_de_points.remove(liste_de_points[index])
+    else:
+        print("More obstacles are instanced than there are points available.")
+
+    drapeau_index = randint(0, len(liste_de_points) - 1)
+    drapeau = liste_de_points[drapeau_index]
+    liste_de_points.remove(liste_de_points[drapeau_index])
+
+    tee_index = randint(0, len(liste_de_points) - 1)
+    tee = liste_de_points[tee_index]
+    liste_de_points.remove(liste_de_points[tee_index])
+
+    optimal_distance = distance(tee, drapeau)
+    while optimal_distance < DISTANCE_MINIMUM_TEE_DRAPEAU and len(liste_de_points) >1:
+        print("loop")
+        tee_index_prime = randint(0, len(liste_de_points) - 1)
+        tee_prime = liste_de_points[tee_index_prime]
+        new_distance = distance(tee_prime, drapeau)
+        if new_distance > optimal_distance:
+            tee_index = tee_index_prime
+            tee = tee_prime
+            optimal_distance = new_distance
+        else:
+            print("point discarded")
+        liste_de_points.remove(liste_de_points[tee_index])
+
+    return arbres, bunkers, drapeau, tee
 
 # </editor-fold>
 
 # <editor-fold desc="Initialisation du jeu">
 terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
-generation_du_terrain(points)
+
+liste_arbres, liste_bunkers, drapeau_position, tee_position = generation_du_terrain(points)
 continuer = True
 # </editor-fold>
 
@@ -196,7 +214,13 @@ continuer = True
 while continuer:
     liste_sprite.draw(fenetre)
     for point in points:
-        pygame.draw.circle(fenetre, (255, 0, 0), (int(point[0]), int(point[1])), 25)
+        pygame.draw.circle(fenetre, (100, 100, 100), (int(point[0]), int(point[1])), 10)
+    for arbre in liste_arbres:
+        pygame.draw.circle(fenetre, (0, 255, 100), (int(arbre.pos_x), int(arbre.pos_y)), 25)
+    for bunker in liste_bunkers:
+        pygame.draw.circle(fenetre, (194, 178, 128), (int(bunker.pos_x), int(bunker.pos_y)), 25)
+    pygame.draw.circle(fenetre, (255, 0, 0), (int(drapeau_position[0]), int(drapeau_position[1])), 25)
+    pygame.draw.circle(fenetre, (0, 0, 190), (int(tee_position[0]), int(tee_position[1])), 25)
     pygame.display.flip()
     for event in pygame.event.get():
         if event.type == QUIT:
