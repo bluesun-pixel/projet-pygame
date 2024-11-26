@@ -1,9 +1,13 @@
 # <editor-fold desc="Initialisation et variables générales">
+
+
 import pygame
+from pygame.key import key_code
 from pygame.locals import *
 import math
 import random
 from random import randint
+
 
 # Initiation de pygame et de la fenêtre de jeu
 pygame.init()
@@ -19,7 +23,7 @@ liste_sprite = pygame.sprite.LayeredUpdates()
 def ajouter_sprite(image_nom, rect_x, rect_y):
     sprite_ajout = pygame.sprite.Sprite()
     pygame.sprite.Sprite.__init__(sprite_ajout)
-    sprite_ajout.image = pygame.image.load(image_nom).convert()
+    sprite_ajout.image = pygame.image.load(image_nom).convert_alpha()
     sprite_ajout.rect = sprite_ajout.image.get_rect()
     sprite_ajout.rect.x = rect_x
     sprite_ajout.rect.y = rect_y
@@ -142,15 +146,20 @@ class Bunker(Obstacles):
 NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
-NOMBRE_ARBRES = 20
+NOMBRE_ARBRES = 5
 NOMBRE_BUNKERS = 20
 DISTANCE_MINIMUM_TEE_DRAPEAU = 800
 VITESSE_ANGULAIRE = .002
 
-#défintion des variables et instances de classe
-obstacle1 = Obstacles(0, 0)  # TODO: essayer de créer une classe abstraite/virtuelle
+#définition des variables et instances de classe
+
 points = poisson_disc_sampling(90, 649, 1280, 50)
-alpha = 0 #angle en degré représentant la direction de visée
+game_state = 0 #0 = visée, 1=puissance, 2=mouvement de balle, 3 = pause
+alpha = 0 #angle en degré représentant la direction ou la puissance de visée selon gamestate
+hauteur_force = 50 #variation de hauteur du compteur de force
+direction_aléatoire = [0,0]
+force_aléatoire = 0
+nombre_de_tirs = 0
 
 # </editor-fold>
 
@@ -206,6 +215,7 @@ def generation_du_terrain(liste_de_points):
 
 # <editor-fold desc="Initialisation du jeu">
 terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
+compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
 
 liste_arbres, liste_bunkers, drapeau_position, tee_position = generation_du_terrain(points)
 continuer = True
@@ -215,8 +225,6 @@ continuer = True
 while continuer:
     liste_sprite.draw(fenetre)
 
-    for point in points:
-        pygame.draw.circle(fenetre, (100, 100, 100), (int(point[0]), int(point[1])), 10)
     for arbre in liste_arbres:
         pygame.draw.circle(fenetre, (0, 255, 100), (int(arbre.pos_x), int(arbre.pos_y)), 25)
     for bunker in liste_bunkers:
@@ -224,20 +232,42 @@ while continuer:
     pygame.draw.circle(fenetre, (255, 0, 0), (int(drapeau_position[0]), int(drapeau_position[1])), 25)
     pygame.draw.circle(fenetre, (0, 0, 190), (int(tee_position[0]), int(tee_position[1])), 25)
 
-    if alpha < 360:
-        alpha += VITESSE_ANGULAIRE
-    else:
-        alpha = 0
+    match game_state:
+        case 0:
+            if alpha < 360:
+                alpha += VITESSE_ANGULAIRE
+            else:
+                alpha = 0
 
-    visee_x = tee_position[0] + math.cos(alpha) * 50
-    visee_y = tee_position[1] + math.sin(alpha) * 50
+            visee_x = tee_position[0] + math.cos(alpha) * 50
+            visee_y = tee_position[1] + math.sin(alpha) * 50
 
-    pygame.draw.circle(fenetre, (0, 0, 190), (int(visee_x), visee_y), 10)
+            direction_aléatoire = [visee_x/50, visee_y/50]
+        case 1:
+            force_y=0
+            if alpha <360:
+                force_y = math.sin(alpha) * hauteur_force
+                alpha += VITESSE_ANGULAIRE
+            else:
+                alpha = 0
+            force_aléatoire = (force_y + 1)/2
 
-
+    pygame.draw.circle(fenetre, (0, 0, 190), (direction_aléatoire[0]*50, direction_aléatoire[1]*50), 10)
+    pygame.draw.circle(fenetre, (0, 0, 190),(fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[1] - force_aléatoire*2+1 - 100), 10)
+    police = pygame.font.Font(None, 100)
+    compteur.image = police.render(f"{nombre_de_tirs}", 1, (255,255,255))
     pygame.display.flip()
 
     for event in pygame.event.get():
         if event.type == QUIT:
             continuer = False
+        elif event.type == pygame.KEYUP:
+            if event.key == K_SPACE:
+                if game_state <3:
+                    if game_state == 1:
+                        nombre_de_tirs +=1
+
+                    game_state +=1
+
+
 # </editor-fold>
