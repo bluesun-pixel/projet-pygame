@@ -1,0 +1,134 @@
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\n# <editor-fold desc=\"Initialisation et variables générales\">\nimport pygame\nfrom pygame.locals import *\nimport math\nimport random\nfrom random import randint\n\n# Initiation de pygame et de la fenêtre de jeu\npygame.init()\npygame.key.set_repeat(30, 30)\nfenetre = pygame.display.set_mode((1280, 649), RESIZABLE)\nliste_sprite = pygame.sprite.LayeredUpdates()\n\n\n# </editor-fold>\n\n# <editor-fold desc=\"Fonctions générales liées à pygame et à la structure du jeu\">\n# Fonction permettant d'ajouter un sprite automatiquement dans le LayeredUpdate\ndef ajouter_sprite(image_nom, rect_x, rect_y):\n    sprite_ajout = pygame.sprite.Sprite()\n    pygame.sprite.Sprite.__init__(sprite_ajout)\n    sprite_ajout.image = pygame.image.load(image_nom).convert()\n    sprite_ajout.rect = sprite_ajout.image.get_rect()\n    sprite_ajout.rect.x = rect_x\n    sprite_ajout.rect.y = rect_y\n    liste_sprite.add(sprite_ajout)\n    return sprite_ajout\n\n# Fonction permettant d'ajouter du texte automatiquement dans le LayeredUpdate\ndef ajouter_texte(police_nom, taille, texte_a_afficher):\n    police = pygame.font.Font(police_nom, taille)\n    texte = pygame.sprite.Sprite()\n    pygame.sprite.Sprite.__init__(texte)\n    liste_sprite.add(texte)\n\n    texte.image = police.render(texte_a_afficher, 1, (10, 10, 10), (255, 90, 20))\n    texte.rect = texte.image.get_rect()\n    texte.rect.centerx = fenetre.get_rect().centerx\n    texte.rect.centery = fenetre.get_rect().centery\n    liste_sprite.add(texte)\n    return texte\n\n#fonction retournant la distance entre 2 points grâce à Pythagore\ndef distance(p1, p2):\n    return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)\n\n#fonction permettant de générer n points uniformément sur une certaine surface, en respectant une distance minimum\ndef poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):\n    points = []\n    taille_de_grille = distance_minimum / math.sqrt(2)\n    largeur_de_grille = math.ceil(largeur / taille_de_grille)\n    hauteur_de_grille = math.ceil(hauteur / taille_de_grille)\n    grille = [[None for _ in range(hauteur_de_grille)] for _ in range(largeur_de_grille)]\n\n    def est_contenu_dans_la_fenetre(x, y):\n        return 0 <= x < largeur and 0 <= y < hauteur\n\n    def est_valable(point):\n        gx = int(point[0] / taille_de_grille)\n        gy = int(point[1] / taille_de_grille)\n\n        for i in range(-2, 3):\n            for j in range(-2, 3):\n                x_voisin = gx + i\n                y_voisin = gy + j  # Fix here, should be gy + j instead of gy + i\n                if 0 <= x_voisin < largeur_de_grille and 0 <= y_voisin < hauteur_de_grille:\n                    voisin = grille[x_voisin][y_voisin]\n                    if voisin and distance(point, voisin) < distance_minimum:\n                        return False\n        return True\n\n    def ajouter_point(point):\n        points.append(point)\n        gx = int(point[0] / taille_de_grille)\n        gy = int(point[1] / taille_de_grille)\n        grille[gx][gy] = point\n\n    liste_active = []\n    point_initial = (random.uniform(0, largeur), random.uniform(0, hauteur))\n    ajouter_point(point_initial)\n    liste_active.append(point_initial)\n\n    while liste_active:\n        point_actuel = random.choice(liste_active)\n        trouve = False\n\n        for i in range(k):\n            angle = random.uniform(0, math.pi * 2)\n            rayon = random.uniform(distance_minimum, 2 * distance_minimum)\n            nouveau_point = (point_actuel[0] + rayon * math.cos(angle), point_actuel[1] + rayon * math.sin(angle))\n\n            if est_contenu_dans_la_fenetre(*nouveau_point) and est_valable(nouveau_point):\n                ajouter_point(nouveau_point)\n                liste_active.append(nouveau_point)\n                trouve = True\n                break\n        if not trouve:\n            liste_active.remove(point_actuel)\n\n    return points\n# </editor-fold>\n\n# <editor-fold desc=\"Déclaration des classes\">\n# Classe parente dont les obstacles héritent\nclass Obstacles:\n    def __init__(self, pos_x, pos_y):\n        self.pos_x = pos_x\n        self.pos_y = pos_y\n\n    # Réaction générale des obstacles à une collision --> effet sur la balle de façon générale\n    def collision(self, balle):\n        pass\n\n# Classe définissant l'obstacle arbre, faisant rebondir la balle\nclass Arbre(Obstacles):\n    def __init__(self, pos_x, pos_y):\n        super().__init__(pos_x, pos_y)\n        self.nom_image = \"Images/img_2.png\"\n        #ajouter_sprite(self.nom_image, pos_x, pos_y)\n\n    # Override de la fonction collision() du parent\n    def collision(self, balle):\n        super().collision(balle)\n        print(\"Une balle est rentrée dans l'arbre!\")\n\n# Classe définissant les bunkers (sable)\nclass Bunker(Obstacles):\n    def __init__(self, pos_x, pos_y):\n        super().__init__(pos_x, pos_y)\n        self.nom_image = \"Images/img.png\"\n        #ajouter_sprite(self.nom_image, pos_x, pos_y)\n\n    # Override de la fonction collision() du parent\n    def collision(self, balle):\n        super().collision(balle)\n        print(\"Oh non! Un bunker!\")\n        \nclass Balle:\n    def __init__(self, balle_x, balle_y):\n        self.balle_x = balle_x\n        self.balle_y = balle_y\n        self.direction = [1, 1]\n        self.frottement = 0.9888\n        self.vitesse = 5\n\n    def deplacer_balle(self):\n        if self.vitesse >= 0.1:\n            self.balle_x += self.vitesse * self.direction[0]\n            self.balle_y += self.vitesse * self.direction[1]\n            self.vitesse *= self.frottement\n        else:\n            self.vitesse = 0\n\n# </editor-fold>\n\n# <editor-fold desc=\"Déclaration et définitions des constantes/variables spécifiques\">\n#définition des constantes du jeu\nNOMBRE_DE_POINTS = 70\nPHI = 1.618\nRAYON = 350\nNOMBRE_ARBRES = 20\nNOMBRE_BUNKERS = 20\nDISTANCE_MINIMUM_TEE_DRAPEAU = 800\n\n#défintion des variables et instances de classe\nobstacle1 = Obstacles(0, 0)  # TODO: essayer de créer une classe abstraite/virtuelle\npoints = poisson_disc_sampling(90, 649, 1280, 50)\nballe_golf = Balle( 10, 10)\n\n# </editor-fold>\n\n# <editor-fold desc=\"Fonctions spécifiques au jeu\">\n# Fonction générant le terrain basé sur une liste de points\ndef generation_du_terrain(liste_de_points):\n    arbres = []\n    if NOMBRE_ARBRES <= len(liste_de_points):\n        for i in range(NOMBRE_ARBRES):\n            index = randint(0, len(liste_de_points) - 1)\n            x_pos, y_pos = liste_de_points[index]\n            arbre_instance = Arbre(x_pos, y_pos)\n            arbres.append(arbre_instance)\n            liste_de_points.remove(liste_de_points[index])\n    else:\n        print(\"More obstacles are instanced than there are points available.\")\n\n    bunkers = []\n    if NOMBRE_BUNKERS <= len(liste_de_points):\n        for i in range(NOMBRE_BUNKERS):\n            index = randint(0, len(liste_de_points) - 1)\n            x_pos, y_pos = liste_de_points[index]\n            bunker_instance = Bunker(x_pos, y_pos)\n            bunkers.append(bunker_instance)\n            liste_de_points.remove(liste_de_points[index])\n    else:\n        print(\"More obstacles are instanced than there are points available.\")\n\n    drapeau_index = randint(0, len(liste_de_points) - 1)\n    drapeau = liste_de_points[drapeau_index]\n    liste_de_points.remove(liste_de_points[drapeau_index])\n\n    tee_index = randint(0, len(liste_de_points) - 1)\n    tee = liste_de_points[tee_index]\n    liste_de_points.remove(liste_de_points[tee_index])\n\n    optimal_distance = distance(tee, drapeau)\n    while optimal_distance < DISTANCE_MINIMUM_TEE_DRAPEAU and len(liste_de_points) >1:\n        print(\"loop\")\n        tee_index_prime = randint(0, len(liste_de_points) - 1)\n        tee_prime = liste_de_points[tee_index_prime]\n        new_distance = distance(tee_prime, drapeau)\n        if new_distance > optimal_distance:\n            tee_index = tee_index_prime\n            tee = tee_prime\n            optimal_distance = new_distance\n        else:\n            print(\"point discarded\")\n        liste_de_points.remove(liste_de_points[tee_index])\n\n    return arbres, bunkers, drapeau, tee\n\n# </editor-fold>\n\n# <editor-fold desc=\"Initialisation du jeu\">\nterrain = ajouter_sprite(\"Images/grass_texture.jpg\", 0, 0)\n\nliste_arbres, liste_bunkers, drapeau_position, tee_position = generation_du_terrain(points)\ncontinuer = True\n# </editor-fold>\n\n# <editor-fold desc=\"Boucle de jeu\">\nwhile continuer:\n    fenetre.fill((0,0,0))\n    liste_sprite.draw(fenetre)\n    \n    balle_golf.deplacer_balle()\n    pygame.draw.circle(fenetre, (100, 100, 100), (int(balle_golf.balle_x), int(balle_golf.balle_y)), 15)\n\n    for point in points:\n        pygame.draw.circle(fenetre, (100, 100, 100), (int(point[0]), int(point[1])), 10)\n    for arbre in liste_arbres:\n        pygame.draw.circle(fenetre, (0, 255, 100), (int(arbre.pos_x), int(arbre.pos_y)), 25)\n    for bunker in liste_bunkers:\n        pygame.draw.circle(fenetre, (194, 178, 128), (int(bunker.pos_x), int(bunker.pos_y)), 25)\n    pygame.draw.circle(fenetre, (255, 0, 0), (int(drapeau_position[0]), int(drapeau_position[1])), 25)\n    pygame.draw.circle(fenetre, (0, 0, 190), (int(tee_position[0]), int(tee_position[1])), 25)\n\n    pygame.display.flip()\n    for event in pygame.event.get():\n        if event.type == QUIT:\n            continuer = False\n# </editor-fold>\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision c9329d2e70362d36bc66a0f9e5705670acd26be0)
++++ b/main.py	(date 1732633833077)
+@@ -168,6 +168,7 @@
+ points = poisson_disc_sampling(90, 649, 1280, 50)
+ balle_golf = Balle( 10, 10)
+ 
++
+ # </editor-fold>
+ 
+ # <editor-fold desc="Fonctions spécifiques au jeu">
+@@ -223,7 +224,9 @@
+ 
+ # <editor-fold desc="Initialisation du jeu">
+ terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
+-
++obstacle = ajouter_sprite("Images/img_1.png", fenetre.get_rect().centerx,fenetre.get_rect().centery)
++balle_sprite = ajouter_sprite("Images/balle.png", balle_golf.balle_x, balle_golf.balle_y)
++balle_sprite.image = pygame.transform.scale(balle_sprite.image, [40, 30])
+ liste_arbres, liste_bunkers, drapeau_position, tee_position = generation_du_terrain(points)
+ continuer = True
+ # </editor-fold>
+@@ -232,8 +235,9 @@
+ while continuer:
+     fenetre.fill((0,0,0))
+     liste_sprite.draw(fenetre)
+-    
+-    balle_golf.deplacer_balle()
++
++
++
+     pygame.draw.circle(fenetre, (100, 100, 100), (int(balle_golf.balle_x), int(balle_golf.balle_y)), 15)
+ 
+     for point in points:
+@@ -245,6 +249,10 @@
+     pygame.draw.circle(fenetre, (255, 0, 0), (int(drapeau_position[0]), int(drapeau_position[1])), 25)
+     pygame.draw.circle(fenetre, (0, 0, 190), (int(tee_position[0]), int(tee_position[1])), 25)
+ 
++    balle_golf.deplacer_balle()
++    balle_sprite.rect.x = balle_golf.balle_x-20
++    balle_sprite.rect.y = balle_golf.balle_y-15
++
+     pygame.display.flip()
+     for event in pygame.event.get():
+         if event.type == QUIT:
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"Black\">\n    <option name=\"sdkName\" value=\"Python 3.12 (projet-pygame)\" />\n  </component>\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.12 (projet-pygame)\" project-jdk-type=\"Python SDK\" />\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision c9329d2e70362d36bc66a0f9e5705670acd26be0)
++++ b/.idea/misc.xml	(date 1732632341414)
+@@ -3,5 +3,5 @@
+   <component name="Black">
+     <option name="sdkName" value="Python 3.12 (projet-pygame)" />
+   </component>
+-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (projet-pygame)" project-jdk-type="Python SDK" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (Projets)" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file
+Index: .idea/projet-pygame.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<module type=\"PYTHON_MODULE\" version=\"4\">\n  <component name=\"NewModuleRootManager\">\n    <content url=\"file://$MODULE_DIR$\">\n      <excludeFolder url=\"file://$MODULE_DIR$/.venv\" />\n    </content>\n    <orderEntry type=\"jdk\" jdkName=\"Python 3.12 (projet-pygame)\" jdkType=\"Python SDK\" />\n    <orderEntry type=\"sourceFolder\" forTests=\"false\" />\n  </component>\n</module>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/projet-pygame.iml b/.idea/projet-pygame.iml
+--- a/.idea/projet-pygame.iml	(revision c9329d2e70362d36bc66a0f9e5705670acd26be0)
++++ b/.idea/projet-pygame.iml	(date 1732632341412)
+@@ -4,7 +4,7 @@
+     <content url="file://$MODULE_DIR$">
+       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+     </content>
+-    <orderEntry type="jdk" jdkName="Python 3.12 (projet-pygame)" jdkType="Python SDK" />
++    <orderEntry type="jdk" jdkName="Python 3.12 (Projets)" jdkType="Python SDK" />
+     <orderEntry type="sourceFolder" forTests="false" />
+   </component>
+ </module>
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"c3ebc785-ab60-4868-965b-d67480315faf\" name=\"Changes\" comment=\"\">\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/TODO.txt\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/TODO.txt\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"Python Script\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\n      <map>\n        <entry key=\"$PROJECT_DIR$\" value=\"fenetre_et_bases\" />\n      </map>\n    </option>\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 2\n}</component>\n  <component name=\"ProjectId\" id=\"2okk2yt2wdijIcTclhH0KXVRjXA\" />\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\n    <ConfirmationsSetting value=\"1\" id=\"Add\" />\n  </component>\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;Python.main.executor&quot;: &quot;Run&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;git-widget-placeholder&quot;: &quot;generation-aléatoire&quot;,\n    &quot;last_opened_file_path&quot;: &quot;/Users/loicgeinoz/PycharmProjects/projet-pygame&quot;\n  }\n}</component>\n  <component name=\"SharedIndexes\">\n    <attachedChunks>\n      <set>\n        <option value=\"bundled-python-sdk-abccbe9d933a-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.20224.428\" />\n      </set>\n    </attachedChunks>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"c3ebc785-ab60-4868-965b-d67480315faf\" name=\"Changes\" comment=\"\" />\n      <created>1731420757955</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1731420757955</updated>\n    </task>\n    <servers />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State />\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision c9329d2e70362d36bc66a0f9e5705670acd26be0)
++++ b/.idea/workspace.xml	(date 1732632870102)
+@@ -5,8 +5,10 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="c3ebc785-ab60-4868-965b-d67480315faf" name="Changes" comment="">
++      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/projet-pygame.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/projet-pygame.iml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/TODO.txt" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.txt" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -39,14 +41,14 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent">{
+-  &quot;keyToString&quot;: {
+-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+-    &quot;git-widget-placeholder&quot;: &quot;generation-aléatoire&quot;,
+-    &quot;last_opened_file_path&quot;: &quot;/Users/loicgeinoz/PycharmProjects/projet-pygame&quot;
++  <component name="PropertiesComponent"><![CDATA[{
++  "keyToString": {
++    "Python.main.executor": "Run",
++    "RunOnceActivity.ShowReadmeOnStart": "true",
++    "git-widget-placeholder": "mouvement-balle",
++    "last_opened_file_path": "/Users/loicgeinoz/PycharmProjects/projet-pygame"
+   }
+-}</component>
++}]]></component>
+   <component name="SharedIndexes">
+     <attachedChunks>
+       <set>
