@@ -153,8 +153,8 @@ class Balle:
         self.balle_x = balle_x
         self.balle_y = balle_y
         self.direction = [1, 1]
-        self.frottement = 0.988
-        self.vitesse = 1
+        self.frottement = 0.9888
+        self.vitesse = 0
 
     def deplacer_balle(self):
         if self.vitesse >= 0.1:
@@ -172,10 +172,11 @@ class Balle:
 NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
-NOMBRE_ARBRES = 5
-NOMBRE_BUNKERS = 20
+NOMBRE_ARBRES = 20
+NOMBRE_BUNKERS = 5
 DISTANCE_MINIMUM_TEE_DRAPEAU = 800
 VITESSE_ANGULAIRE = .002
+FORCE_MINIMUM = 1
 
 # définition des variables et instances de classe
 
@@ -248,10 +249,14 @@ compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
 
 liste_arbres, liste_bunkers, drapeau_position, tee_position = generation_du_terrain(points)
 continuer = True
-# </editor-fold>
+balle_golf.balle_x = tee_position[0]
+balle_golf.balle_y = tee_position[1]
 pygame.draw.circle(fenetre, (100, 100, 100), (int(balle_golf.balle_x), int(balle_golf.balle_y)), 15)
 balle_sprite = ajouter_sprite("Images/balle.png", balle_golf.balle_x, balle_golf.balle_y)
 balle_sprite.image = pygame.transform.scale(balle_sprite.image, [40, 30])
+
+# <editor-fold desc="Boucle de jeu">
+ 
 balle_sprite.rect = balle_sprite.image.get_rect()
 obstacles = liste_arbres + liste_bunkers
 
@@ -259,7 +264,10 @@ obstacles = liste_arbres + liste_bunkers
 while continuer:
     fenetre.fill((0, 0, 0))
     liste_sprite.draw(fenetre)
-
+    if game_state == 2 and balle_golf.vitesse == 0:
+        direction_aléatoire = [0, 0]
+        force_aléatoire = 0
+        game_state = 0
     balle_sprite.rect.x = balle_golf.balle_x
     balle_sprite.rect.y = balle_golf.balle_y
 
@@ -292,27 +300,29 @@ while continuer:
             else:
                 alpha = 0
 
-            visee_x = tee_position[0] + math.cos(alpha) * 50
-            visee_y = tee_position[1] + math.sin(alpha) * 50
+            visee_x = math.cos(alpha)
+            visee_y = math.sin(alpha)
 
-            direction_aléatoire = [visee_x / 50, visee_y / 50]
+
+            direction_aléatoire = [visee_x, visee_y]
         case 1:
             force_y = 0
             if alpha < 360:
-                force_y = math.sin(alpha) * hauteur_force
+                force_y = math.sin(alpha)
                 alpha += VITESSE_ANGULAIRE
             else:
                 alpha = 0
             force_aléatoire = (force_y + 1) / 2
+            print(f"force aléatoire : {force_aléatoire}")
 
-    pygame.draw.circle(fenetre, (0, 0, 190), (direction_aléatoire[0] * 50, direction_aléatoire[1] * 50), 10)
     pygame.draw.circle(fenetre, (0, 0, 190), (
-    fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[1] - force_aléatoire * 2 + 1 - 100), 10)
+    balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50), 10)
+    pygame.draw.circle(fenetre, (0, 0, 190), (fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[
+        1] - hauteur_force * force_aléatoire * 2 + 1 - 100), 10)
     police = pygame.font.Font(None, 100)
     compteur.image = police.render(f"{nombre_de_tirs}", 1, (255, 255, 255))
 
     pygame.display.flip()
-
     for event in pygame.event.get():
         if event.type == QUIT:
             continuer = False
@@ -320,6 +330,9 @@ while continuer:
             if event.key == K_SPACE:
                 if game_state < 3:
                     if game_state == 1:
+                        balle_golf.direction = direction_aléatoire
+                        balle_golf.vitesse = FORCE_MINIMUM + force_aléatoire * 2.7
+                        print(f"vitesse: {balle_golf.vitesse}")
                         nombre_de_tirs += 1
 
                     game_state += 1
