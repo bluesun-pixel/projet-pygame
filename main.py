@@ -1,4 +1,3 @@
-
 # <editor-fold desc="Initialisation et variables générales">
 
 
@@ -8,7 +7,6 @@ from pygame.locals import *
 import math
 import random
 from random import randint
-
 
 # Initiation de pygame et de la fenêtre de jeu
 pygame.init()
@@ -31,6 +29,7 @@ def ajouter_sprite(image_nom, rect_x, rect_y):
     liste_sprite.add(sprite_ajout)
     return sprite_ajout
 
+
 # Fonction permettant d'ajouter du texte automatiquement dans le LayeredUpdate
 def ajouter_texte(police_nom, taille, texte_a_afficher):
     police = pygame.font.Font(police_nom, taille)
@@ -45,11 +44,13 @@ def ajouter_texte(police_nom, taille, texte_a_afficher):
     liste_sprite.add(texte)
     return texte
 
-#fonction retournant la distance entre 2 points grâce à Pythagore
+
+# fonction retournant la distance entre 2 points grâce à Pythagore
 def distance(p1, p2):
     return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
-#fonction permettant de générer n points uniformément sur une certaine surface, en respectant une distance minimum
+
+# fonction permettant de générer n points uniformément sur une certaine surface, en respectant une distance minimum
 def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
     points = []
     taille_de_grille = distance_minimum / math.sqrt(2)
@@ -103,6 +104,8 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
             liste_active.remove(point_actuel)
 
     return points
+
+
 # </editor-fold>
 
 # <editor-fold desc="Déclaration des classes">
@@ -113,31 +116,34 @@ class Obstacles:
         self.pos_y = pos_y
 
     # Réaction générale des obstacles à une collision --> effet sur la balle de façon générale
-    #def collision(self, balle):
-        #pass
+    # def collision(self, balle):
+    # pass
+
 
 # Classe définissant l'obstacle arbre, faisant rebondir la balle
 class Arbre(Obstacles):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
         self.nom_image = "Images/img_2.png"
-        #ajouter_sprite(self.nom_image, pos_x, pos_y)
+        # ajouter_sprite(self.nom_image, pos_x, pos_y)
 
     # Override de la fonction collision() du parent
     def collision(self, balle):
         print("Une balle est rentrée dans l'arbre!")
+
 
 # Classe définissant les bunkers (sable)
 class Bunker(Obstacles):
     def __init__(self, pos_x, pos_y):
         super().__init__(pos_x, pos_y)
         self.nom_image = "Images/img.png"
-        #ajouter_sprite(self.nom_image, pos_x, pos_y)
+        # ajouter_sprite(self.nom_image, pos_x, pos_y)
 
     # Override de la fonction collision() du parent
     def collision(self, balle):
         print("Oh non! Un bunker!")
-        
+
+
 class Balle:
     def __init__(self, balle_x, balle_y):
         self.balle_x = balle_x
@@ -154,10 +160,11 @@ class Balle:
         else:
             self.vitesse = 0
 
+
 # </editor-fold>
 
 # <editor-fold desc="Déclaration et définitions des constantes/variables spécifiques">
-#définition des constantes du jeu
+# définition des constantes du jeu
 NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
@@ -167,16 +174,17 @@ DISTANCE_MINIMUM_TEE_DRAPEAU = 800
 VITESSE_ANGULAIRE = .002
 FORCE_MINIMUM = 1
 
-#définition des variables et instances de classe
+# définition des variables et instances de classe
 
 points = poisson_disc_sampling(90, 649, 1280, 50)
-game_state = 0 #0 = visée, 1=puissance, 2=mouvement de balle, 3 = pause
-alpha = 0 #angle en degré représentant la direction ou la puissance de visée selon gamestate
-hauteur_force = 50 #variation de hauteur du compteur de force
-direction_aléatoire = [0,0]
+game_state = 0  # 0 = visée, 1=puissance, 2=mouvement de balle, 3 = pause
+alpha = 0  # angle en degré représentant la direction ou la puissance de visée selon gamestate
+hauteur_force = 50  # variation de hauteur du compteur de force
+direction_aléatoire = [0, 0]
 force_aléatoire = 0
 nombre_de_tirs = 0
-balle_golf = Balle( 10, 10)
+balle_golf = Balle(10, 10)
+
 
 # </editor-fold>
 
@@ -214,7 +222,7 @@ def generation_du_terrain(liste_de_points):
     liste_de_points.remove(liste_de_points[tee_index])
 
     optimal_distance = distance(tee, drapeau)
-    while optimal_distance < DISTANCE_MINIMUM_TEE_DRAPEAU and len(liste_de_points) >2:
+    while optimal_distance < DISTANCE_MINIMUM_TEE_DRAPEAU and len(liste_de_points) > 2:
         tee_index_prime = randint(0, len(liste_de_points) - 1)
         tee_prime = liste_de_points[tee_index_prime]
         new_distance = distance(tee_prime, drapeau)
@@ -227,6 +235,7 @@ def generation_du_terrain(liste_de_points):
         liste_de_points.remove(liste_de_points[tee_index_prime])
 
     return arbres, bunkers, drapeau, tee
+
 
 # </editor-fold>
 
@@ -245,7 +254,7 @@ obstacle = []
 obstacle_sprite = ajouter_sprite("Images/img.png", 200, 200)
 obstacle.append(obstacle_sprite)
 hit_list = pygame.sprite.spritecollide(balle_sprite, obstacle, False)
-if len(hit_list)>0:
+if len(hit_list) > 0:
     print("Collision detecté")
     if hit_list[0].image == "Images/img.png":
         print("c'est un arbre")
@@ -253,11 +262,11 @@ if len(hit_list)>0:
 
 # <editor-fold desc="Boucle de jeu">
 while continuer:
-    if game_state == 2 and balle_golf.vitesse ==0:
-        direction_aléatoire = [0,0]
+    if game_state == 2 and balle_golf.vitesse == 0:
+        direction_aléatoire = [0, 0]
         force_aléatoire = 0
         game_state = 0
-    fenetre.fill((0,0,0))
+    fenetre.fill((0, 0, 0))
     liste_sprite.draw(fenetre)
 
     balle_sprite.rect.x = balle_golf.balle_x
@@ -279,24 +288,26 @@ while continuer:
             else:
                 alpha = 0
 
-            visee_x =  math.cos(alpha)
-            visee_y =  math.sin(alpha)
+            visee_x = math.cos(alpha)
+            visee_y = math.sin(alpha)
 
             direction_aléatoire = [visee_x, visee_y]
         case 1:
-            force_y=0
-            if alpha <360:
+            force_y = 0
+            if alpha < 360:
                 force_y = math.sin(alpha)
                 alpha += VITESSE_ANGULAIRE
             else:
                 alpha = 0
-            force_aléatoire = (force_y + 1)/2
+            force_aléatoire = (force_y + 1) / 2
             print(f"force aléatoire : {force_aléatoire}")
 
-    pygame.draw.circle(fenetre, (0, 0, 190), (balle_golf.balle_x +direction_aléatoire[0]*50, balle_golf.balle_y +direction_aléatoire[1]*50), 10)
-    pygame.draw.circle(fenetre, (0, 0, 190),(fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[1] - hauteur_force*force_aléatoire*2+1 - 100), 10)
+    pygame.draw.circle(fenetre, (0, 0, 190), (
+    balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50), 10)
+    pygame.draw.circle(fenetre, (0, 0, 190), (fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[
+        1] - hauteur_force * force_aléatoire * 2 + 1 - 100), 10)
     police = pygame.font.Font(None, 100)
-    compteur.image = police.render(f"{nombre_de_tirs}", 1, (255,255,255))
+    compteur.image = police.render(f"{nombre_de_tirs}", 1, (255, 255, 255))
 
     pygame.display.flip()
     for event in pygame.event.get():
@@ -304,14 +315,13 @@ while continuer:
             continuer = False
         elif event.type == pygame.KEYUP:
             if event.key == K_SPACE:
-                if game_state <3:
+                if game_state < 3:
                     if game_state == 1:
                         balle_golf.direction = direction_aléatoire
-                        balle_golf.vitesse = FORCE_MINIMUM + force_aléatoire*2.7
+                        balle_golf.vitesse = FORCE_MINIMUM + force_aléatoire * 2.7
                         print(f"vitesse: {balle_golf.vitesse}")
-                        nombre_de_tirs +=1
+                        nombre_de_tirs += 1
 
-                    game_state +=1
-
+                    game_state += 1
 
 # </editor-fold>
