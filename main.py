@@ -157,8 +157,8 @@ class Obstacles(pygame.sprite.Sprite):
         self.image = pygame.image.load("Images/img_2.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, [55, 55])
         self.rect = self.image.get_rect()
-        self.rect.x = pos_x
-        self.rect.y = pos_y
+        self.rect.centerx = pos_x
+        self.rect.centery = pos_y
         self.pos_x = pos_x
         self.pos_y = pos_y
         liste_des_sprites.add(self)
@@ -217,7 +217,8 @@ class Balle:
 
 #ajout de la barre qui nous indique la puissance
 image_puissance = pygame.image.load("Images/barre_puissance.jpg").convert_alpha()
-image_puissance = pygame.transform.scale(image_puissance, [20, 120])
+image_puissance = pygame.transform.scale(image_puissance, [20, 100])
+
 position_barre = (90, 440)
 
 
@@ -248,7 +249,9 @@ DISTANCE_MINIMUM_TEE_DRAPEAU = 100
 VITESSE_ANGULAIRE = .002
 FORCE_MINIMUM = 1
 
+
 points = poisson_disc_sampling(90, 649, 1280, 50)
+
 
 alpha = 0
 hauteur_force = 50
@@ -310,6 +313,8 @@ def generation_du_terrain(liste_de_points):
 # <editor-fold desc="Initialisation du jeu">
 terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
 compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
+compteur.rect.centerx = 100
+compteur.rect.centery = 100
 
 liste_arbres, liste_bunkers, drapeau_sprite, tee_position = generation_du_terrain(points)
 continuer = True
@@ -342,7 +347,17 @@ while continuer:
         balle_golf.deplacer_balle()
 
 
+
         fenetre.blit(image_puissance, position_barre)
+
+    balle_sprite.rect.centerx = balle_golf.balle_x
+    balle_sprite.rect.centery = balle_golf.balle_y
+    if 0 > balle_golf.balle_x or balle_golf.balle_x > fenetre.get_rect().width:
+        balle_golf.direction[0] *= -1
+    if 0 > balle_golf.balle_y or balle_golf.balle_y> fenetre.get_rect().height:
+        balle_golf.direction[1] *= -1
+    balle_golf.deplacer_balle()
+
 
 
 
@@ -390,6 +405,7 @@ while continuer:
         police = pygame.font.Font(None, 100)
         compteur.image = police.render(f"{nombre_de_tirs}", 1, (255, 255, 255))
 
+
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -399,6 +415,14 @@ while continuer:
                 if event.key == K_SPACE:
                     if game_state < 3:
                         if game_state == 1:
+
+    #pygame.draw.circle(fenetre, (0, 0, 190), (balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50), 10)
+    #pygame.draw.circle(fenetre, (0, 0, 190), (fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 100), 10)
+    pygame.draw.line(fenetre,(255,0,0), (balle_golf.balle_x, balle_golf.balle_y), (balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50),3)
+    pygame.draw.line(fenetre, (255, 0, 0), (fenetre.get_rect().bottomleft[0] + 90, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 110), (fenetre.get_rect().bottomleft[0] + 110, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 110), 5)
+    police = pygame.font.Font(None, 100)
+    compteur.image = police.render(f"{nombre_de_tirs}", 1, (255, 255, 255))
+
 
                             balle_golf.direction = direction_aléatoire
                             balle_golf.vitesse = FORCE_MINIMUM + force_aléatoire * 2.7
