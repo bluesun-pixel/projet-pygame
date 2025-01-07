@@ -113,8 +113,8 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
 class Obstacles(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, liste_des_sprites):
         super().__init__()  # Appel obligatoire
-        self.image = pygame.image.load("Images/img.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, [20, 30])
+        self.image = pygame.image.load("Images/sable_image.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, [55, 55])
         self.rect = self.image.get_rect()
         self.rect.x = pos_x
         self.rect.y = pos_y
@@ -130,6 +130,8 @@ class Obstacles(pygame.sprite.Sprite):
 class Arbre(Obstacles):
     def __init__(self, pos_x, pos_y, liste_des_sprites):
         super().__init__(pos_x, pos_y, liste_des_sprites)
+        self.image = pygame.image.load("Images/arbre.jpg").convert_alpha()
+        self.image = pygame.transform.scale(self.image, [55, 55])
         # ajouter_sprite(self.nom_image, pos_x, pos_y)
 
     # Override de la fonction collision() du parent
@@ -163,6 +165,12 @@ class Balle:
             self.vitesse *= self.frottement
         else:
             self.vitesse = 0
+
+#ajout de la barre qui nous indique la puissance
+image_puissance = pygame.image.load("Images/barre_puissance.jpg").convert_alpha()
+image_puissance = pygame.transform.scale(image_puissance, [20, 120])
+position_barre = (90, 440)
+
 
 
 # </editor-fold>
@@ -259,7 +267,6 @@ balle_sprite.image = pygame.transform.scale(balle_sprite.image, [40, 30])
  
 balle_sprite.rect = balle_sprite.image.get_rect()
 obstacles = liste_arbres + liste_bunkers
-
 # <editor-fold desc="Boucle de jeu">
 while continuer:
     fenetre.fill((0, 0, 0))
@@ -273,6 +280,8 @@ while continuer:
 
     balle_golf.deplacer_balle()
 
+    fenetre.blit(image_puissance, position_barre)
+
     for arbre in liste_arbres:
         pygame.draw.circle(fenetre, (0, 255, 100), (int(arbre.pos_x), int(arbre.pos_y)), 25)
     for bunker in liste_bunkers:
@@ -284,13 +293,15 @@ while continuer:
         print("Collision detecté")
         print([(x.rect.x, x.rect.y) for x in hit_list])
         if type(hit_list[0]) == Arbre:
-            if hit_list[0].rect.x <= balle_golf.balle_x <= hit_list[0].rect.x + 30:
+            if hit_list[0].rect.x <= balle_golf.balle_x <= hit_list[0].rect.x + 55:
+                balle_golf.balle_y += 1
                 balle_golf.direction[1] = -balle_golf.direction[1]
-            if hit_list[0].rect.y <= balle_golf.balle_y <= hit_list[0].rect.y + 20:
+            if hit_list[0].rect.y <= balle_golf.balle_y <= hit_list[0].rect.y + 55:
+                balle_golf.balle_x += 1
                 balle_golf.direction[0] = -balle_golf.direction[0]
             print("C'est un arbre !")
         if type(hit_list[0]) == Bunker:
-            balle_golf.frottement = 0.6
+            balle_golf.frottement = 0.7
             print("C'est un bunker !")
 
     match game_state:
