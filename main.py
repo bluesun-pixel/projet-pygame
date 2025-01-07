@@ -1,9 +1,13 @@
 # <editor-fold desc="Initialisation et variables générales">
+from types import NoneType
+
 import pygame
 from pygame.locals import *
 import math
 import random
 from random import randint
+
+game_state = -2 #gère l'action actuelle --> visée = 0, force = 1, mouvement = 2
 
 # Initialisation de pygame et de la fenêtre de jeu
 pygame.init()
@@ -228,6 +232,7 @@ class Drapeau(Obstacles):
 
     def collision(self):
         print("Fin du jeu!")
+        return  -1
 
 
 # </editor-fold>
@@ -237,14 +242,14 @@ class Drapeau(Obstacles):
 NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
-NOMBRE_ARBRES = 20
-NOMBRE_BUNKERS = 20
+NOMBRE_ARBRES = 0
+NOMBRE_BUNKERS = 0
 DISTANCE_MINIMUM_TEE_DRAPEAU = 100
 VITESSE_ANGULAIRE = .002
 FORCE_MINIMUM = 1
 
 points = poisson_disc_sampling(90, 649, 1280, 50)
-game_state = 0 #gère l'action actuelle --> visée = 0, force = 1, mouvement = 2
+
 alpha = 0
 hauteur_force = 50
 direction_aléatoire = [0, 0]
@@ -320,84 +325,103 @@ obstacles.append(drapeau_sprite)
 
 # </editor-fold>
 
-
+texte_1 = ajouter_texte(None, 40, "Appuyez sur espace pour viser et une nouvelle fois pour bloquer la puissance et tirer")
 # <editor-fold desc="Boucle de jeu">
 while continuer:
     fenetre.fill((0, 0, 0))
     liste_sprite.draw(fenetre)
+    if game_state >= 0:
+        if game_state == 2 and balle_golf.vitesse == 0:
+            direction_aléatoire = [0, 0]
+            force_aléatoire = 0
+            game_state = 0
 
-    if game_state == 2 and balle_golf.vitesse == 0:
-        direction_aléatoire = [0, 0]
-        force_aléatoire = 0
-        game_state = 0
+        balle_sprite.rect.x = balle_golf.balle_x
+        balle_sprite.rect.y = balle_golf.balle_y
 
-    balle_sprite.rect.x = balle_golf.balle_x
-    balle_sprite.rect.y = balle_golf.balle_y
-
-    balle_golf.deplacer_balle()
-
-
-    fenetre.blit(image_puissance, position_barre)
+        balle_golf.deplacer_balle()
 
 
+        fenetre.blit(image_puissance, position_barre)
 
-    hit_list = pygame.sprite.spritecollide(balle_sprite, obstacles, False)
 
-    if len(hit_list) > 0:
-        print("Collision detectée")
 
-        if type(hit_list[0]) == Arbre:
-            hit_list[0].collision(balle_golf, hit_list[0])
-            print("C'est un arbre !")
-        if type(hit_list[0]) == Bunker:
-            hit_list[0].collision(balle_golf)
+        hit_list = pygame.sprite.spritecollide(balle_sprite, obstacles, False)
 
-            print("C'est un bunker !")
-        if type(hit_list[0]) == Drapeau:
-            print("collision drapeau")
-            hit_list[0].collision()
+        if len(hit_list) > 0:
+            print("Collision detectée")
 
-    match game_state:
-        case 0:
-            if alpha < 360:
-                alpha += VITESSE_ANGULAIRE
-            else:
-                alpha = 0
+            if type(hit_list[0]) == Arbre:
+                hit_list[0].collision(balle_golf, hit_list[0])
+                print("C'est un arbre !")
+            if type(hit_list[0]) == Bunker:
+                hit_list[0].collision(balle_golf)
 
-            visee_x = math.cos(alpha)
-            visee_y = math.sin(alpha)
+                print("C'est un bunker !")
+            if type(hit_list[0]) == Drapeau:
+                print("collision drapeau")
+                game_state = hit_list[0].collision()
 
-            direction_aléatoire = [visee_x, visee_y]
-        case 1:
-            force_y = 0
+        match game_state:
+            case 0:
+                if alpha < 360:
+                    alpha += VITESSE_ANGULAIRE
+                else:
+                    alpha = 0
 
-            if alpha < 360:
-                force_y = math.sin(alpha)
-                alpha += VITESSE_ANGULAIRE
-            else:
-                alpha = 0
+                visee_x = math.cos(alpha)
+                visee_y = math.sin(alpha)
 
-            force_aléatoire = (force_y + 1) / 2
+                direction_aléatoire = [visee_x, visee_y]
+            case 1:
+                force_y = 0
 
-    pygame.draw.circle(fenetre, (0, 0, 190), (balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50), 10)
-    pygame.draw.circle(fenetre, (0, 0, 190), (fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 100), 10)
+                if alpha < 360:
+                    force_y = math.sin(alpha)
+                    alpha += VITESSE_ANGULAIRE
+                else:
+                    alpha = 0
 
-    police = pygame.font.Font(None, 100)
-    compteur.image = police.render(f"{nombre_de_tirs}", 1, (255, 255, 255))
+                force_aléatoire = (force_y + 1) / 2
 
-    pygame.display.flip()
+        pygame.draw.circle(fenetre, (0, 0, 190), (balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50), 10)
+        pygame.draw.circle(fenetre, (0, 0, 190), (fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 100), 10)
 
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            continuer = False
-        elif event.type == pygame.KEYUP:
-            if event.key == K_SPACE:
-                if game_state < 3:
-                    if game_state == 1:
+        police = pygame.font.Font(None, 100)
+        compteur.image = police.render(f"{nombre_de_tirs}", 1, (255, 255, 255))
 
-                        balle_golf.direction = direction_aléatoire
-                        balle_golf.vitesse = FORCE_MINIMUM + force_aléatoire * 2.7
-                        nombre_de_tirs += 1
+        pygame.display.flip()
 
-                    game_state += 1
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                continuer = False
+            elif event.type == pygame.KEYUP:
+                if event.key == K_SPACE:
+                    if game_state < 3:
+                        if game_state == 1:
+
+                            balle_golf.direction = direction_aléatoire
+                            balle_golf.vitesse = FORCE_MINIMUM + force_aléatoire * 2.7
+                            nombre_de_tirs += 1
+
+                        game_state += 1
+    elif game_state == -1:
+        texte_3 = ajouter_texte(None, 100, f"Fin du jeu, Bravo !!")
+        texte_4 = ajouter_texte(None, 100, f"Vous avez fait : {nombre_de_tirs} tirs")
+        texte_4.rect.centery +=100
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                continuer = False
+    elif game_state == -2:
+
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == KEYUP:
+                if event.key == K_SPACE:
+                    liste_sprite.remove(texte_1)
+                    game_state = 0
+            if event.type == QUIT:
+                continuer = False
+
 # </editor-fold>
