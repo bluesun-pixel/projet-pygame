@@ -150,7 +150,7 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
 class Obstacles(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, liste_des_sprites):
         super().__init__()  # Appel obligatoire
-        self.image = pygame.image.load("Images/sable_image.png").convert_alpha()
+        self.image = pygame.image.load("Images/img_2.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, [55, 55])
         self.rect = self.image.get_rect()
         self.rect.x = pos_x
@@ -183,7 +183,9 @@ class Bunker(Obstacles):
     Classe pour l'obstacle "bunker".
     '''
     def __init__(self, pos_x, pos_y, liste_des_sprites):
-        super().__init__(pos_x, pos_y, liste_des_sprites, "img_1.png")
+        super().__init__(pos_x, pos_y, liste_des_sprites)
+        self.image = pygame.image.load("Images/sable_image.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, [55, 55])
 
     def collision(self, balle):
         balle.frottement = 0.6
@@ -221,7 +223,8 @@ class Drapeau(Obstacles):
     Classe pour l'obstacle "drapeau".
     '''
     def __init__(self, pos_x, pos_y, liste_des_sprites):
-        super().__init__(pos_x, pos_y, liste_des_sprites, "img_2.png")
+        super().__init__(pos_x, pos_y, liste_des_sprites)
+
 
     def collision(self):
         print("Fin du jeu!")
@@ -235,7 +238,7 @@ NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
 NOMBRE_ARBRES = 20
-NOMBRE_BUNKERS = 0
+NOMBRE_BUNKERS = 20
 DISTANCE_MINIMUM_TEE_DRAPEAU = 100
 VITESSE_ANGULAIRE = .002
 FORCE_MINIMUM = 1
@@ -336,12 +339,7 @@ while continuer:
 
     fenetre.blit(image_puissance, position_barre)
 
-    for arbre in liste_arbres:
-        pygame.draw.circle(fenetre, (0, 255, 100), (int(arbre.pos_x), int(arbre.pos_y)), 25)
-    for bunker in liste_bunkers:
-        pygame.draw.circle(fenetre, (194, 178, 128), (int(bunker.pos_x), int(bunker.pos_y)), 25)
-    pygame.draw.circle(fenetre, (255, 0, 0), (int(drapeau_position[0]), int(drapeau_position[1])), 25)
-    pygame.draw.circle(fenetre, (0, 0, 190), (int(tee_position[0]), int(tee_position[1])), 25)
+
 
     hit_list = pygame.sprite.spritecollide(balle_sprite, obstacles, False)
 
