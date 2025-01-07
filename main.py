@@ -148,13 +148,10 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
 # <editor-fold desc="Déclaration des classes">
 
 class Obstacles(pygame.sprite.Sprite):
-    '''
-    Classe parente pour les obstacles.
-    '''
-    def __init__(self, pos_x, pos_y, liste_des_sprites, nom_sprite):
-        super().__init__()
-        self.image = pygame.image.load(f"Images/{nom_sprite}").convert_alpha()
-        self.image = pygame.transform.scale(self.image, [20, 30])
+    def __init__(self, pos_x, pos_y, liste_des_sprites):
+        super().__init__()  # Appel obligatoire
+        self.image = pygame.image.load("Images/sable_image.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, [55, 55])
         self.rect = self.image.get_rect()
         self.rect.x = pos_x
         self.rect.y = pos_y
@@ -167,7 +164,13 @@ class Arbre(Obstacles):
     Classe pour l'obstacle "arbre".
     '''
     def __init__(self, pos_x, pos_y, liste_des_sprites):
-        super().__init__(pos_x, pos_y, liste_des_sprites, "img.png")
+
+        super().__init__(pos_x, pos_y, liste_des_sprites)
+        self.image = pygame.image.load("Images/arbre.jpg").convert_alpha()
+        self.image = pygame.transform.scale(self.image, [55, 55])
+        # ajouter_sprite(self.nom_image, pos_x, pos_y)
+
+   
 
     def collision(self, balle, sprite):
         if sprite.rect.x <= balle.balle_x <= sprite.rect.x + 30:
@@ -205,6 +208,14 @@ class Balle:
         else:
             self.vitesse = 0
 
+
+#ajout de la barre qui nous indique la puissance
+image_puissance = pygame.image.load("Images/barre_puissance.jpg").convert_alpha()
+image_puissance = pygame.transform.scale(image_puissance, [20, 120])
+position_barre = (90, 440)
+
+
+
 class Drapeau(Obstacles):
     '''
     Classe pour l'obstacle "drapeau".
@@ -214,6 +225,7 @@ class Drapeau(Obstacles):
 
     def collision(self):
         print("Fin du jeu!")
+
 
 # </editor-fold>
 
@@ -300,9 +312,11 @@ balle_sprite.image = pygame.transform.scale(balle_sprite.image, [40, 30])
 
 balle_sprite.rect = balle_sprite.image.get_rect()
 obstacles = liste_arbres + liste_bunkers
+
 obstacles.append(drapeau_sprite)
 
 # </editor-fold>
+
 
 # <editor-fold desc="Boucle de jeu">
 while continuer:
@@ -319,6 +333,16 @@ while continuer:
 
     balle_golf.deplacer_balle()
 
+
+    fenetre.blit(image_puissance, position_barre)
+
+    for arbre in liste_arbres:
+        pygame.draw.circle(fenetre, (0, 255, 100), (int(arbre.pos_x), int(arbre.pos_y)), 25)
+    for bunker in liste_bunkers:
+        pygame.draw.circle(fenetre, (194, 178, 128), (int(bunker.pos_x), int(bunker.pos_y)), 25)
+    pygame.draw.circle(fenetre, (255, 0, 0), (int(drapeau_position[0]), int(drapeau_position[1])), 25)
+    pygame.draw.circle(fenetre, (0, 0, 190), (int(tee_position[0]), int(tee_position[1])), 25)
+
     hit_list = pygame.sprite.spritecollide(balle_sprite, obstacles, False)
 
     if len(hit_list) > 0:
@@ -329,6 +353,7 @@ while continuer:
             print("C'est un arbre !")
         if type(hit_list[0]) == Bunker:
             hit_list[0].collision(balle_golf)
+
             print("C'est un bunker !")
         if type(hit_list[0]) == Drapeau:
             print("collision drapeau")
