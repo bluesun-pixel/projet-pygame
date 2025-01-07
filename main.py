@@ -188,7 +188,7 @@ class Bunker(Obstacles):
         self.image = pygame.transform.scale(self.image, [55, 55])
 
     def collision(self, balle):
-        balle.frottement = 0.6
+        balle.frottement = 0.7
         print("Oh non! Un bunker!")
 
 class Balle:
