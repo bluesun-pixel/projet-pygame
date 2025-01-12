@@ -159,6 +159,9 @@ class Obstacles(pygame.sprite.Sprite):
         self.pos_y = pos_y
         liste_des_sprites.add(self)
 
+    def collision(self):
+        return True
+
 class Arbre(Obstacles):
     '''
     Classe pour l'obstacle "arbre".
@@ -173,10 +176,13 @@ class Arbre(Obstacles):
    
 
     def collision(self, balle, sprite):
-        if sprite.rect.x <= balle.balle_x <= sprite.rect.x + 30:
+        if sprite.rect.x <= balle.balle_x <= sprite.rect.x + sprite.rect.height:
             balle.direction[1] = -balle.direction[1]
-        if sprite.rect.y <= balle.balle_y <= sprite.rect.y + 20:
+            print("reverted x")
+        if sprite.rect.y <= balle.balle_y <= sprite.rect.y + sprite.rect.width:
             balle.direction[0] = -balle.direction[0]
+            print("reverted y")
+        super().collision()
 
 class Bunker(Obstacles):
     '''
@@ -188,8 +194,9 @@ class Bunker(Obstacles):
         self.image = pygame.transform.scale(self.image, [55, 55])
 
     def collision(self, balle):
-        balle.frottement = 0.6
+        balle.frottement = 0.95
         print("Oh non! Un bunker!")
+        super().collision()
 
 class Balle:
     '''
@@ -201,6 +208,7 @@ class Balle:
         self.direction = [1, 1]
         self.frottement = 0.9888
         self.vitesse = 0
+        self.collision = False
 
     def deplacer_balle(self):
         if self.vitesse >= 0.1:
@@ -238,10 +246,10 @@ class Drapeau(Obstacles):
 NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
-NOMBRE_ARBRES = 20
-NOMBRE_BUNKERS = 20
-DISTANCE_MINIMUM_TEE_DRAPEAU = 100
-VITESSE_ANGULAIRE = .002
+NOMBRE_ARBRES = 25
+NOMBRE_BUNKERS = 5
+DISTANCE_MINIMUM_TEE_DRAPEAU = 500
+VITESSE_ANGULAIRE = .0025
 FORCE_MINIMUM = 1
 
 points = poisson_disc_sampling(90, 620, 1250, 50)
@@ -355,21 +363,26 @@ while continuer:
         hit_list = pygame.sprite.spritecollide(balle_sprite, obstacles, False)
 
         if len(hit_list) > 0:
-            print("Collision detectée")
 
-            if type(hit_list[0]) == Arbre:
-                hit_list[0].collision(balle_golf, hit_list[0])
-                print("C'est un arbre !")
-            if type(hit_list[0]) == Bunker:
-                hit_list[0].collision(balle_golf)
 
-                print("C'est un bunker !")
+            if balle_golf.collision ==False:
+                print("Collision detectée")
+                if type(hit_list[0]) == Arbre:
+                    balle_golf.collision = hit_list[0].collision(balle_golf, hit_list[0])
+                    print("C'est un arbre !")
+                if type(hit_list[0]) == Bunker:
+                    balle_golf.collision = hit_list[0].collision(balle_golf)
+
+                    print("C'est un bunker !")
             if type(hit_list[0]) == Drapeau:
                 print("collision drapeau")
                 hit_list[0].collision()
                 game_state = -1
                 liste_sprite.add(texte_fin)
 
+        else:
+            balle_golf.collision = False
+            balle_golf.frottement = 0.988
         match game_state:
             case 0:
                 if alpha < 360:
