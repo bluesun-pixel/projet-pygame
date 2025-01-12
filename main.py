@@ -333,9 +333,14 @@ obstacles.append(drapeau_sprite)
 
 
 # <editor-fold desc="Boucle de jeu">
-texte_demarrage = ajouter_texte(None, 100, "Appuyez sur espace pour démarrer: espace pour viser, espace pour tirer")
-texte_fin = ajouter_texte(None, 100, f"Fin du jeu ! Score : {nombre_de_tirs}")
-liste_sprite.remove((texte_fin))
+texte_demarrage_1 = ajouter_texte(None, 30, f"Comment jouer ? Appuyez sur [espace] pour bloquer la direction de la balle et cliquez à nouveau pour bloquer la puissance")
+texte_demarrage_1.rect.y -= 200
+texte_demarrage_2 = ajouter_texte(None, 30, "Le but est de mettre la balle dans le trou en évitant les arbres et les bunkers")
+texte_demarrage_2.rect.y -= 150
+texte_demarrage_3 = ajouter_texte(None,60, "Bonne chance !")
+texte_demarrage_4 = ajouter_texte(None,50, "Appuyez sur [espace] pour jouer")
+texte_demarrage_4.rect.y += 200
+
 
 while continuer:
     fenetre.fill((0, 0, 0))
@@ -378,7 +383,17 @@ while continuer:
                 print("collision drapeau")
                 hit_list[0].collision()
                 game_state = -1
-                liste_sprite.add(texte_fin)
+                texte_fin_1 = ajouter_texte(None, 150, f"Bravo !")
+                texte_fin_1.rect.y -= 200
+                if nombre_de_tirs <= 1:
+                    texte_fin_2 = ajouter_texte(None, 100, f"Hole in one !! Bravo")
+                else:
+                    texte_fin_2 = ajouter_texte(None, 100, f"Vous avez fait {nombre_de_tirs} coups")
+
+                texte_relancer = ajouter_texte(None, 30, "Appuyez sur [espace] pour rejouer")
+                texte_relancer.rect.y += 100
+
+                liste_sprite.add(texte_fin_1, texte_fin_2, texte_relancer)
 
         else:
             balle_golf.collision = False
@@ -436,12 +451,46 @@ while continuer:
             elif event.type == pygame.KEYUP:
                 if event.key == K_SPACE:
                     game_state = 0
-                    liste_sprite.remove(texte_demarrage)
+                    liste_sprite.remove(texte_demarrage_1)
+                    liste_sprite.remove(texte_demarrage_2)
+                    liste_sprite.remove(texte_demarrage_3)
+                    liste_sprite.remove(texte_demarrage_4)
 
     elif game_state == -1:
         liste_sprite.draw(fenetre)
         pygame.display.flip()
+
         for event in pygame.event.get():
-            if event.type == QUIT:
+            if event.type == pygame.QUIT:
                 continuer = False
-# </editor-fold>
+
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_SPACE:  # Vérifier si la barre d'espace a été pressé
+
+                    # Réinitialiser les variables du jeu
+                    nombre_de_tirs = 0
+                    points = poisson_disc_sampling(90, 620, 1250, 50)
+                    balle_golf = Balle(10, 10)
+                    liste_sprite.empty()
+
+                    # Ajouter un nouveau terrain et un nouveau compteur
+                    terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
+                    compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
+                    compteur.rect.centerx = 100
+                    compteur.rect.centery = 100
+
+                    # Générer les obstacles
+                    liste_arbres, liste_bunkers, drapeau_sprite, tee_position = generation_du_terrain(points)
+                    continuer = True
+                    balle_golf.balle_x = tee_position[0]
+                    balle_golf.balle_y = tee_position[1]
+                    balle_sprite = ajouter_sprite("Images/balle.png", balle_golf.balle_x, balle_golf.balle_y)
+                    balle_sprite.image = pygame.transform.scale(balle_sprite.image, [40, 30])
+                    balle_sprite.rect = balle_sprite.image.get_rect()
+                    obstacles = liste_arbres + liste_bunkers
+                    obstacles.append(drapeau_sprite)
+
+                    # Passer au bon état de jeu pour rejouer
+                    game_state = 0
+
+        # </editor-fold>
