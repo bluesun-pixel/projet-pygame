@@ -206,7 +206,7 @@ class Balle:
         self.balle_x = balle_x
         self.balle_y = balle_y
         self.direction = [1, 1]
-        self.frottement = 0.9888
+        self.frottement = 0.989
         self.vitesse = 0
         self.collision = False
 
@@ -397,7 +397,7 @@ while continuer:
 
         else:
             balle_golf.collision = False
-            balle_golf.frottement = 0.988
+            balle_golf.frottement = 0.989
         match game_state:
             case 0:
                 if alpha < 360:
@@ -440,8 +440,8 @@ while continuer:
                             balle_golf.direction = direction_aléatoire
                             balle_golf.vitesse = FORCE_MINIMUM + force_aléatoire * 2.7
                             nombre_de_tirs += 1
-
-                        game_state += 1
+                        if game_state != 2:
+                            game_state += 1
     elif game_state == -2:
         liste_sprite.draw(fenetre)
         pygame.display.flip()
