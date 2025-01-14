@@ -1,4 +1,6 @@
 # <editor-fold desc="Initialisation et variables générales">
+import time
+
 import pygame
 from pygame.locals import *
 import math
@@ -333,6 +335,7 @@ obstacles.append(drapeau_sprite)
 
 
 # <editor-fold desc="Boucle de jeu">
+terrain_de_start = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
 texte_demarrage_1 = ajouter_texte(None, 30, f"Comment jouer ? Appuyez sur [espace] pour bloquer la direction de la balle et cliquez à nouveau pour bloquer la puissance")
 texte_demarrage_1.rect.y -= 200
 texte_demarrage_2 = ajouter_texte(None, 30, "Le but est de mettre la balle dans le trou en évitant les arbres et les bunkers")
@@ -382,6 +385,8 @@ while continuer:
             if type(hit_list[0]) == Drapeau:
                 print("collision drapeau")
                 hit_list[0].collision()
+                time.sleep(0.2)
+                terrain_fin = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
                 game_state = -1
                 texte_fin_1 = ajouter_texte(None, 150, f"Bravo !")
                 texte_fin_1.rect.y -= 200
@@ -455,6 +460,7 @@ while continuer:
                     liste_sprite.remove(texte_demarrage_2)
                     liste_sprite.remove(texte_demarrage_3)
                     liste_sprite.remove(texte_demarrage_4)
+                    liste_sprite.remove(terrain_de_start)
 
     elif game_state == -1:
         liste_sprite.draw(fenetre)
@@ -463,10 +469,8 @@ while continuer:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 continuer = False
-
             elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_SPACE:  # Vérifier si la barre d'espace a été pressé
-
+                if event.key == pygame.K_SPACE:
                     # Réinitialiser les variables du jeu
                     nombre_de_tirs = 0
                     points = poisson_disc_sampling(90, 620, 1250, 50)
