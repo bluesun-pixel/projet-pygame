@@ -1,6 +1,6 @@
 # <editor-fold desc="Initialisation et variables générales">
 import time
-
+import os, random
 import pygame
 from pygame.locals import *
 import math
@@ -9,6 +9,11 @@ from random import randint
 
 # Initialisation de pygame et de la fenêtre de jeu
 pygame.init()
+pygame.mixer.init()
+path = os.path.dirname(os.path.abspath(__file__)) + "/Musiques"
+file = random.choice(os.listdir(path))
+pygame.mixer.music.load(f"Musiques/{file}")
+pygame.mixer.music.play(-1,0.0)
 pygame.key.set_repeat(30, 30)
 fenetre = pygame.display.set_mode((1280, 649), RESIZABLE)
 liste_sprite = pygame.sprite.LayeredUpdates()
@@ -476,6 +481,9 @@ while continuer:
                     points = poisson_disc_sampling(90, 620, 1250, 50)
                     balle_golf = Balle(10, 10)
                     liste_sprite.empty()
+                    file = random.choice(os.listdir(path))
+                    pygame.mixer.music.load(f"Musiques/{file}")
+                    pygame.mixer.music.play(-1, 0.0)
 
                     # Ajouter un nouveau terrain et un nouveau compteur
                     terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
