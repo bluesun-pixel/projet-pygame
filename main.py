@@ -2,6 +2,7 @@
 import time
 import os, random
 import pygame
+from pygame.examples.cursors import image
 from pygame.locals import *
 import math
 import random
@@ -233,7 +234,6 @@ image_puissance = pygame.transform.scale(image_puissance, [20, 100])
 position_barre = (90, 440)
 
 
-
 class Drapeau(Obstacles):
     '''
     Classe pour l'obstacle "drapeau".
@@ -320,9 +320,7 @@ def generation_du_terrain(liste_de_points):
 
 # <editor-fold desc="Initialisation du jeu">
 terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
-compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
-compteur.rect.centerx = 100
-compteur.rect.centery = 100
+
 
 liste_arbres, liste_bunkers, drapeau_sprite, tee_position = generation_du_terrain(points)
 continuer = True
@@ -336,6 +334,10 @@ obstacles = liste_arbres + liste_bunkers
 
 obstacles.append(drapeau_sprite)
 
+compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
+compteur.rect.centerx = 100
+compteur.rect.centery = 100
+
 # </editor-fold>
 
 
@@ -348,7 +350,8 @@ texte_demarrage_2.rect.y -= 150
 texte_demarrage_3 = ajouter_texte(None,60, "Bonne chance !")
 texte_demarrage_4 = ajouter_texte(None,50, "Appuyez sur [espace] pour jouer")
 texte_demarrage_4.rect.y += 200
-
+image_fin_not_scale = pygame.image.load("Images/feu_artifice.jpg")
+image_fin = pygame.transform.scale(image_fin_not_scale, (150, 150))
 
 while continuer:
     fenetre.fill((0, 0, 0))
@@ -468,7 +471,10 @@ while continuer:
                     liste_sprite.remove(terrain_de_start)
 
     elif game_state == -1:
+
         liste_sprite.draw(fenetre)
+        fenetre.blit(image_fin, (10, 10))
+        fenetre.blit(image_fin, (1080, 480))
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -487,9 +493,6 @@ while continuer:
 
                     # Ajouter un nouveau terrain et un nouveau compteur
                     terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
-                    compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
-                    compteur.rect.centerx = 100
-                    compteur.rect.centery = 100
 
                     # Générer les obstacles
                     liste_arbres, liste_bunkers, drapeau_sprite, tee_position = generation_du_terrain(points)
@@ -501,6 +504,9 @@ while continuer:
                     balle_sprite.rect = balle_sprite.image.get_rect()
                     obstacles = liste_arbres + liste_bunkers
                     obstacles.append(drapeau_sprite)
+                    compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
+                    compteur.rect.centerx = 100
+                    compteur.rect.centery = 100
 
                     # Passer au bon état de jeu pour rejouer
                     game_state = 0
