@@ -1,27 +1,33 @@
+####################################################
+# N'oubliez pas de mettre du son quand vous lancerez notre jeu ;)
+####################################################
+
 # <editor-fold desc="Initialisation et variables générales">
+# import des bibliothèques dont on aura besoin
 import time
 import os, random
 import pygame
-
+from pygame.examples.cursors import image
 from pygame.locals import *
 import math
-
+import random
 from random import randint
 
-# Initialisation de pygame et de la fenêtre de jeu
+# Initialisation de pygame, de la fenêtre de jeu et de la musique
 pygame.init()
 pygame.mixer.init()
 path = os.path.dirname(os.path.abspath(__file__)) + "/Musiques"
 file = random.choice(os.listdir(path))
 pygame.mixer.music.load(f"Musiques/{file}")
-pygame.mixer.music.play(-1,0.0)
+pygame.mixer.music.play(-1, 0.0)
 pygame.key.set_repeat(30, 30)
 fenetre = pygame.display.set_mode((1280, 649), RESIZABLE)
 liste_sprite = pygame.sprite.LayeredUpdates()
+
+
 # </editor-fold>
 
 # <editor-fold desc="Fonctions générales liées à pygame et à la structure du jeu">
-
 def ajouter_sprite(image_nom, rect_x, rect_y):
     '''
     Ajoute un sprite à la fenêtre avec une image et une position donnée.
@@ -42,6 +48,7 @@ def ajouter_sprite(image_nom, rect_x, rect_y):
 
     return sprite_ajout
 
+
 def ajouter_texte(police_nom, taille, texte_a_afficher):
     '''
     Ajoute un texte rendu à la fenêtre dans le LayeredUpdate.
@@ -54,7 +61,7 @@ def ajouter_texte(police_nom, taille, texte_a_afficher):
     texte = pygame.sprite.Sprite()
     pygame.sprite.Sprite.__init__(texte)
     liste_sprite.add(texte)
-
+    # Faire apparaître l'image
     texte.image = police.render(texte_a_afficher, 1, (10, 10, 10), (255, 90, 20))
     texte.rect = texte.image.get_rect()
     texte.rect.centerx = fenetre.get_rect().centerx
@@ -64,6 +71,7 @@ def ajouter_texte(police_nom, taille, texte_a_afficher):
 
     return texte
 
+
 def distance(p1, p2):
     '''
     Calcule la distance entre deux points à l'aide du théorème de Pythagore.
@@ -72,6 +80,7 @@ def distance(p1, p2):
     :return: distance entre les deux points
     '''
     return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
 
 def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
     '''
@@ -88,42 +97,42 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
     hauteur_de_grille = math.ceil(hauteur / taille_de_grille)
     grille = [[None for _ in range(hauteur_de_grille)] for _ in range(largeur_de_grille)]
 
-    #contrôle si le point généré est visible dans la fenêtre de jeu
+    # contrôle si le point généré est visible dans la fenêtre de jeu
     def est_contenu_dans_la_fenetre(x, y):
         return 0 <= x < largeur and 0 <= y < hauteur
 
     def est_valable(point):
-        #calcule les indexs de la case actuelle
+        # calcule les indexs de la case actuelle
         gx = int(point[0] / taille_de_grille)
         gy = int(point[1] / taille_de_grille)
 
-        #contrôle les cases environnantes pour un point déjà présent (seulement besoin de contrôler les cases les plus proches)
+        # contrôle les cases environnantes pour un point déjà présent (seulement besoin de contrôler les cases les plus proches)
         for i in range(-2, 3):
             for j in range(-2, 3):
                 x_voisin = gx + i
                 y_voisin = gy + j
-                #contrôle que la case ne soit pas en bord de fenêtre
+                # contrôle que la case ne soit pas en bord de fenêtre
                 if 0 <= x_voisin < largeur_de_grille and 0 <= y_voisin < hauteur_de_grille:
-                    #point dans la case voisine
+                    # point dans la case voisine
                     voisin = grille[x_voisin][y_voisin]
                     if voisin and distance(point, voisin) < distance_minimum:
                         return False
         return True
 
-    #ajoute un point à la liste des points et à la grille
+    # ajoute un point à la liste des points et à la grille
     def ajouter_point(point):
         points.append(point)
         gx = int(point[0] / taille_de_grille)
         gy = int(point[1] / taille_de_grille)
         grille[gx][gy] = point
 
-    #initialisation du premier point et de la liste de travail (liste active)
+    # initialisation du premier point et de la liste de travail (liste active)
     liste_active = []
     point_initial = (random.uniform(0, largeur), random.uniform(0, hauteur))
     ajouter_point(point_initial)
     liste_active.append(point_initial)
 
-    #tant qu'il y a un point dans la liste active
+    # tant qu'il y a un point dans la liste active
     while liste_active:
         '''
         La boucle prend comme entrée un point aléatoire de la liste active, et essaie de trouver 
@@ -133,12 +142,12 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
         trouve = False
 
         for _ in range(k):
-            #coordonnées polaires aléatoires
+            # coordonnées polaires aléatoires
             angle = random.uniform(0, math.pi * 2)
             rayon = random.uniform(distance_minimum, 2 * distance_minimum)
             nouveau_point = (point_actuel[0] + rayon * math.cos(angle), point_actuel[1] + rayon * math.sin(angle))
 
-            #contrôle la validité du nouveau point
+            # contrôle la validité du nouveau point
             if est_contenu_dans_la_fenetre(*nouveau_point) and est_valable(nouveau_point):
                 ajouter_point(nouveau_point)
                 liste_active.append(nouveau_point)
@@ -146,19 +155,26 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
                 break
 
         if not trouve:
-            #considère qu'il n'y a pas de point disponible
+            # considère qu'il n'y a pas de point disponible
             liste_active.remove(point_actuel)
 
     return points
 
+
 # </editor-fold>
 
 # <editor-fold desc="Déclaration des classes">
-
+# classe "de base" obstacle
 class Obstacles(pygame.sprite.Sprite):
+    '''
+    :param pos_x: position x de l'obstacle
+    :param pos_y: position y de l'obstacle
+    :param liste_des_sprites: liste qui comprendra les obstacles
+    '''
+
     def __init__(self, pos_x, pos_y, liste_des_sprites):
         super().__init__()  # Appel obligatoire
-        self.image = pygame.image.load("Images/Trou.png").convert_alpha()
+        self.image = pygame.image.load("Images/img_2.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, [55, 55])
         self.rect = self.image.get_rect()
         self.rect.centerx = pos_x
@@ -168,22 +184,26 @@ class Obstacles(pygame.sprite.Sprite):
         liste_des_sprites.add(self)
 
     def collision(self):
+        # fonction qui sera modifié pour les différents obstacles,
+        # retourne vrai pour pouvoir l'utiliser pour détecter les collisions
         return True
+
 
 class Arbre(Obstacles):
     '''
     Classe pour l'obstacle "arbre".
     '''
+
     def __init__(self, pos_x, pos_y, liste_des_sprites):
 
         super().__init__(pos_x, pos_y, liste_des_sprites)
+        # changement de l'image pour un arbre
         self.image = pygame.image.load("Images/arbre.jpg").convert_alpha()
         self.image = pygame.transform.scale(self.image, [55, 55])
-        # ajouter_sprite(self.nom_image, pos_x, pos_y)
-
-   
 
     def collision(self, balle, sprite):
+        # collision sur l'arbre : suivant le côté sur lequel la balle rebondit,
+        # il faut inverser la direction x ou y de la balle
         if sprite.rect.x <= balle.balle_x <= sprite.rect.x + sprite.rect.height:
             balle.direction[1] = -balle.direction[1]
             print("reverted x")
@@ -192,25 +212,35 @@ class Arbre(Obstacles):
             print("reverted y")
         super().collision()
 
+
 class Bunker(Obstacles):
     '''
     Classe pour l'obstacle "bunker".
     '''
+
     def __init__(self, pos_x, pos_y, liste_des_sprites):
         super().__init__(pos_x, pos_y, liste_des_sprites)
+        # image pour le bunker (sable)
         self.image = pygame.image.load("Images/sable_image.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, [55, 55])
 
     def collision(self, balle):
+        # le bunker ralentit uniquement la balle en augmentant le frottement
         balle.frottement = 0.95
         print("Oh non! Un bunker!")
         super().collision()
+
 
 class Balle:
     '''
     Classe pour la balle de golf.
     '''
+
     def __init__(self, balle_x, balle_y):
+        '''
+        :param balle_x: position x de la balle
+        :param balle_y: position y de la balle
+        '''
         self.balle_x = balle_x
         self.balle_y = balle_y
         self.direction = [1, 1]
@@ -219,57 +249,61 @@ class Balle:
         self.collision = False
 
     def deplacer_balle(self):
+        # si la balle bouge encore, elle subit du frottement pour la ralentir
         if self.vitesse >= 0.1:
             self.balle_x += self.vitesse * self.direction[0]
             self.balle_y += self.vitesse * self.direction[1]
             self.vitesse *= self.frottement
         else:
+            # sinon, la balle est stoppée
             self.vitesse = 0
 
 
-#ajout de la barre qui nous indique la puissance
-image_puissance = pygame.image.load("Images/barre_puissance.jpg").convert_alpha()
-image_puissance = pygame.transform.scale(image_puissance, [20, 100])
-
-position_barre = (90, 440)
-
-
 class Drapeau(Obstacles):
-    '''
-    Classe pour l'obstacle "drapeau".
-    '''
     def __init__(self, pos_x, pos_y, liste_des_sprites):
+        '''
+        Classe pour l'obstacle "drapeau".
+        :param pos_x: position x du drapeau
+        :param pos_y: position y du drapeau
+        :param liste_des_sprites: ajout du drapeau dans la liste de sprite
+        '''
         super().__init__(pos_x, pos_y, liste_des_sprites)
         self.image = pygame.image.load("Images/Trou.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, [200, 200])
-        self.rect.centery = self.rect.topright[1] - 100
+        self.image = pygame.transform.scale(self.image, [150, 150])
+        self.rect = self.image.get_rect()
 
 
     def collision(self):
+        # si la balle entre en collision avec le drapeau, le joueur a gagné
         print("Fin du jeu!")
 
 
 # </editor-fold>
 
-# <editor-fold desc="Déclaration des constantes/variables spécifiques">
+# ajout de la barre qui nous indique la puissance
+image_puissance = pygame.image.load("Images/barre_puissance.jpg").convert_alpha()
+image_puissance = pygame.transform.scale(image_puissance, [20, 100])
+position_barre = (90, 440)
 
+# <editor-fold desc="Déclaration des constantes/variables spécifiques">
 NOMBRE_DE_POINTS = 70
 PHI = 1.618
 RAYON = 350
 NOMBRE_ARBRES = 25
 NOMBRE_BUNKERS = 5
-DISTANCE_MINIMUM_TEE_DRAPEAU = 400
+DISTANCE_MINIMUM_TEE_DRAPEAU = 500
 VITESSE_ANGULAIRE = .0025
 FORCE_MINIMUM = 1
 
-points = poisson_disc_sampling(120, 620, 1250, 50)
-game_state = -2 #gère l'action actuelle --> visée = 0, force = 1, mouvement = 2
+points = poisson_disc_sampling(90, 620, 1250, 50)
+game_state = -2  # gère l'action actuelle --> visée = 0, force = 1, mouvement = 2
 alpha = 0
 hauteur_force = 50
 direction_aléatoire = [0, 0]
 force_aléatoire = 0
 nombre_de_tirs = 0
 balle_golf = Balle(10, 10)
+
 
 # </editor-fold>
 
@@ -312,18 +346,21 @@ def generation_du_terrain(liste_de_points):
         tee_prime = liste_de_points[tee_index_prime]
         new_distance = distance(tee_prime, drapeau)
         if new_distance > optimal_distance:
+            tee_index = tee_index_prime
             tee = tee_prime
             optimal_distance = new_distance
         liste_de_points.remove(liste_de_points[tee_index_prime])
 
     return arbres, bunkers, drapeau_sprite, tee
 
+
 # </editor-fold>
 
 # <editor-fold desc="Initialisation du jeu">
+# ajout de l'image de fond
 terrain = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
 
-
+# génération de tout les éléments sur le terrain
 liste_arbres, liste_bunkers, drapeau_sprite, tee_position = generation_du_terrain(points)
 continuer = True
 balle_golf.balle_x = tee_position[0]
@@ -336,6 +373,7 @@ obstacles = liste_arbres + liste_bunkers
 
 obstacles.append(drapeau_sprite)
 
+# compteut de coups initialisé
 compteur = ajouter_texte(None, 100, f"{nombre_de_tirs}")
 compteur.rect.centerx = 100
 compteur.rect.centery = 100
@@ -343,23 +381,27 @@ compteur.rect.centery = 100
 # </editor-fold>
 
 
-# <editor-fold desc="Boucle de jeu">
+# ajout d'un terrain qui cache tout les obstacles, ... pour lire les consignes
 terrain_de_start = ajouter_sprite("Images/grass_texture.jpg", 0, 0)
-texte_demarrage_1 = ajouter_texte(None, 30, f"Comment jouer ? Appuyez sur [espace] pour bloquer la direction de la balle et cliquez à nouveau pour bloquer la puissance")
+texte_demarrage_1 = ajouter_texte(None, 30,
+                                  f"Comment jouer ? Appuyez sur [espace] pour bloquer la direction de la balle et cliquez à nouveau pour bloquer la puissance")
 texte_demarrage_1.rect.y -= 200
-texte_demarrage_2 = ajouter_texte(None, 30, "Le but est de mettre la balle dans le trou en évitant les arbres et les bunkers")
+texte_demarrage_2 = ajouter_texte(None, 30,
+                                  "Le but est de mettre la balle dans le trou en évitant les arbres et les bunkers")
 texte_demarrage_2.rect.y -= 150
-texte_demarrage_3 = ajouter_texte(None,60, "Bonne chance !")
-texte_demarrage_4 = ajouter_texte(None,50, "Appuyez sur [espace] pour jouer")
+texte_demarrage_3 = ajouter_texte(None, 60, "Bonne chance !")
+texte_demarrage_4 = ajouter_texte(None, 50, "Appuyez sur [espace] pour jouer")
 texte_demarrage_4.rect.y += 200
+# création de l'image qui nous servira pour la fin
 image_fin_not_scale = pygame.image.load("Images/feu_artifice.jpg")
 image_fin = pygame.transform.scale(image_fin_not_scale, (150, 150))
 
+# <editor-fold desc="Boucle de jeu">
 while continuer:
     fenetre.fill((0, 0, 0))
-
-    if game_state >=0:
+    if game_state >= 0:
         liste_sprite.draw(fenetre)
+        # game_state = 0 --> la direction n'est pas bloqué, le joueur dois la choisir
         if game_state == 2 and balle_golf.vitesse == 0:
             direction_aléatoire = [0, 0]
             force_aléatoire = 0
@@ -367,31 +409,33 @@ while continuer:
 
         balle_sprite.rect.centerx = balle_golf.balle_x
         balle_sprite.rect.centery = balle_golf.balle_y
+        # la balle ne peut pas sortir de l'écran
         if 0 > balle_golf.balle_x or balle_golf.balle_x > fenetre.get_rect().width:
             balle_golf.direction[0] *= -1
-        if 0 > balle_golf.balle_y or balle_golf.balle_y> fenetre.get_rect().height:
+        if 0 > balle_golf.balle_y or balle_golf.balle_y > fenetre.get_rect().height:
             balle_golf.direction[1] *= -1
         balle_golf.deplacer_balle()
 
-
+        # ajout de la barre de puissance
         fenetre.blit(image_puissance, position_barre)
 
-
-
+        # création d'une hitlist pour détecter les collisions
         hit_list = pygame.sprite.spritecollide(balle_sprite, obstacles, False)
 
         if len(hit_list) > 0:
-
-
-            if not balle_golf.collision:
+            # règle le bug de collisions multiples
+            if balle_golf.collision == False:
                 print("Collision detectée")
+                # si c'est un arbre, on lance la fonction collision de la classe arbre
                 if type(hit_list[0]) == Arbre:
                     balle_golf.collision = hit_list[0].collision(balle_golf, hit_list[0])
                     print("C'est un arbre !")
+                # si c'est un bunker, on lance la fonction collision de la classe bunker
                 if type(hit_list[0]) == Bunker:
                     balle_golf.collision = hit_list[0].collision(balle_golf)
-
                     print("C'est un bunker !")
+            # si il y a une collision avec le drapeau,
+            # on créé l'écran de fin et on change le statut du jeu: game_state = -1
             if type(hit_list[0]) == Drapeau:
                 print("collision drapeau")
                 hit_list[0].collision()
@@ -400,20 +444,23 @@ while continuer:
                 game_state = -1
                 texte_fin_1 = ajouter_texte(None, 150, f"Bravo !")
                 texte_fin_1.rect.y -= 200
+                # contrôle de nombre de coup du joueur pour afficher un texte en fonction
                 if nombre_de_tirs <= 1:
                     texte_fin_2 = ajouter_texte(None, 100, f"Hole in one !! Bravo")
                 else:
                     texte_fin_2 = ajouter_texte(None, 100, f"Vous avez fait {nombre_de_tirs} coups")
 
+                # dis au joueur comment relancer
                 texte_relancer = ajouter_texte(None, 30, "Appuyez sur [espace] pour rejouer")
                 texte_relancer.rect.y += 100
-
+                # ajout des textes à la liste de sprite
                 liste_sprite.add(texte_fin_1, texte_fin_2, texte_relancer)
-
         else:
+            # si on est pas en collision, balle_golf.collision devient faux
             balle_golf.collision = False
             balle_golf.frottement = 0.989
         match game_state:
+            # gère la saisie de la force et de la direction en fonction du gamestate
             case 0:
                 if alpha < 360:
                     alpha += VITESSE_ANGULAIRE
@@ -435,13 +482,16 @@ while continuer:
 
                 force_aléatoire = (force_y + 1) / 2
 
-        #pygame.draw.circle(fenetre, (0, 0, 190), (balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50), 10)
-        #pygame.draw.circle(fenetre, (0, 0, 190), (fenetre.get_rect().bottomleft[0] + 100, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 100), 10)
-        pygame.draw.line(fenetre,(255,0,0), (balle_golf.balle_x, balle_golf.balle_y), (balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50),3)
-        pygame.draw.line(fenetre, (255, 0, 0), (fenetre.get_rect().bottomleft[0] + 90, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 110), (fenetre.get_rect().bottomleft[0] + 110, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 110), 5)
+        pygame.draw.line(fenetre, (255, 0, 0), (balle_golf.balle_x, balle_golf.balle_y), (
+        balle_golf.balle_x + direction_aléatoire[0] * 50, balle_golf.balle_y + direction_aléatoire[1] * 50), 3)
+        pygame.draw.line(fenetre, (255, 0, 0), (fenetre.get_rect().bottomleft[0] + 90, fenetre.get_rect().bottomleft[
+            1] - hauteur_force * force_aléatoire * 2 + 1 - 110), (fenetre.get_rect().bottomleft[0] + 110,
+                                                                  fenetre.get_rect().bottomleft[
+                                                                      1] - hauteur_force * force_aléatoire * 2 + 1 - 110),
+                         5)
         police = pygame.font.Font(None, 100)
         compteur.image = police.render(f"{nombre_de_tirs}", 1, (255, 255, 255))
-        pygame.draw.circle(fenetre, (255,0,0), (drapeau_sprite.rect.x,drapeau_sprite.rect.y), 50)
+
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -450,14 +500,17 @@ while continuer:
             elif event.type == pygame.KEYUP:
                 if event.key == K_SPACE:
                     if game_state < 3:
+                        # la direction est bloqué à la direction choisi et la puissance est mainenant aléatoire,
+                        # elle est bloquée quand le joueur appuye sur espace (game_state = 1)
                         if game_state == 1:
-
                             balle_golf.direction = direction_aléatoire
                             balle_golf.vitesse = FORCE_MINIMUM + force_aléatoire * 2.7
                             nombre_de_tirs += 1
                         if game_state != 2:
+                            # on ajoute 1 à game_state pour que la balle bouge (game_state = 2)
                             game_state += 1
     elif game_state == -2:
+        # écran d'accueil
         liste_sprite.draw(fenetre)
         pygame.display.flip()
         for event in pygame.event.get():
@@ -465,6 +518,8 @@ while continuer:
                 continuer = False
             elif event.type == pygame.KEYUP:
                 if event.key == K_SPACE:
+                    # on supprime les textes et change le statut de jeu
+                    # quand le joueur appuye sur espace
                     game_state = 0
                     liste_sprite.remove(texte_demarrage_1)
                     liste_sprite.remove(texte_demarrage_2)
@@ -473,7 +528,7 @@ while continuer:
                     liste_sprite.remove(terrain_de_start)
 
     elif game_state == -1:
-
+        # ecran de fin
         liste_sprite.draw(fenetre)
         fenetre.blit(image_fin, (10, 10))
         fenetre.blit(image_fin, (1080, 480))
@@ -483,6 +538,7 @@ while continuer:
             if event.type == pygame.QUIT:
                 continuer = False
             elif event.type == pygame.KEYUP:
+                # appuyer sur espace pour relancer le jeu
                 if event.key == pygame.K_SPACE:
                     # Réinitialiser les variables du jeu
                     nombre_de_tirs = 0
