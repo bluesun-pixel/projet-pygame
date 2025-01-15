@@ -2,10 +2,10 @@
 import time
 import os, random
 import pygame
-from pygame.examples.cursors import image
+
 from pygame.locals import *
 import math
-import random
+
 from random import randint
 
 # Initialisation de pygame et de la fenêtre de jeu
@@ -158,7 +158,7 @@ def poisson_disc_sampling(distance_minimum, hauteur, largeur, k=50):
 class Obstacles(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, liste_des_sprites):
         super().__init__()  # Appel obligatoire
-        self.image = pygame.image.load("Images/img_2.png").convert_alpha()
+        self.image = pygame.image.load("Images/Trou.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, [55, 55])
         self.rect = self.image.get_rect()
         self.rect.centerx = pos_x
@@ -240,6 +240,9 @@ class Drapeau(Obstacles):
     '''
     def __init__(self, pos_x, pos_y, liste_des_sprites):
         super().__init__(pos_x, pos_y, liste_des_sprites)
+        self.image = pygame.image.load("Images/Trou.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, [200, 200])
+        self.rect.centery = self.rect.topright[1] - 100
 
 
     def collision(self):
@@ -255,11 +258,11 @@ PHI = 1.618
 RAYON = 350
 NOMBRE_ARBRES = 25
 NOMBRE_BUNKERS = 5
-DISTANCE_MINIMUM_TEE_DRAPEAU = 500
+DISTANCE_MINIMUM_TEE_DRAPEAU = 400
 VITESSE_ANGULAIRE = .0025
 FORCE_MINIMUM = 1
 
-points = poisson_disc_sampling(90, 620, 1250, 50)
+points = poisson_disc_sampling(120, 620, 1250, 50)
 game_state = -2 #gère l'action actuelle --> visée = 0, force = 1, mouvement = 2
 alpha = 0
 hauteur_force = 50
@@ -309,7 +312,6 @@ def generation_du_terrain(liste_de_points):
         tee_prime = liste_de_points[tee_index_prime]
         new_distance = distance(tee_prime, drapeau)
         if new_distance > optimal_distance:
-            tee_index = tee_index_prime
             tee = tee_prime
             optimal_distance = new_distance
         liste_de_points.remove(liste_de_points[tee_index_prime])
@@ -381,7 +383,7 @@ while continuer:
         if len(hit_list) > 0:
 
 
-            if balle_golf.collision ==False:
+            if not balle_golf.collision:
                 print("Collision detectée")
                 if type(hit_list[0]) == Arbre:
                     balle_golf.collision = hit_list[0].collision(balle_golf, hit_list[0])
@@ -439,7 +441,7 @@ while continuer:
         pygame.draw.line(fenetre, (255, 0, 0), (fenetre.get_rect().bottomleft[0] + 90, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 110), (fenetre.get_rect().bottomleft[0] + 110, fenetre.get_rect().bottomleft[1] - hauteur_force * force_aléatoire * 2 + 1 - 110), 5)
         police = pygame.font.Font(None, 100)
         compteur.image = police.render(f"{nombre_de_tirs}", 1, (255, 255, 255))
-
+        pygame.draw.circle(fenetre, (255,0,0), (drapeau_sprite.rect.x,drapeau_sprite.rect.y), 50)
         pygame.display.flip()
 
         for event in pygame.event.get():
