@@ -204,10 +204,10 @@ class Arbre(Obstacles):
     def collision(self, balle, sprite):
         # collision sur l'arbre : suivant le côté sur lequel la balle rebondit,
         # il faut inverser la direction x ou y de la balle
-        if sprite.rect.x <= balle.balle_x <= sprite.rect.x + sprite.rect.height:
+        if sprite.rect.x - 15 <= balle.balle_x <= sprite.rect.x + sprite.rect.height+15:
             balle.direction[1] = -balle.direction[1]
             print("reverted x")
-        if sprite.rect.y <= balle.balle_y <= sprite.rect.y + sprite.rect.width:
+        if sprite.rect.y - 20 <= balle.balle_y <= sprite.rect.y + sprite.rect.width+20:
             balle.direction[0] = -balle.direction[0]
             print("reverted y")
         super().collision()
@@ -269,7 +269,7 @@ class Drapeau(Obstacles):
         '''
         super().__init__(pos_x, pos_y, liste_des_sprites)
         self.image = pygame.image.load("Images/Trou.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, [150, 150])
+        self.image = pygame.transform.scale(self.image, [35, 55])
         self.rect = self.image.get_rect()
 
 
@@ -291,8 +291,8 @@ PHI = 1.618
 RAYON = 350
 NOMBRE_ARBRES = 25
 NOMBRE_BUNKERS = 5
-DISTANCE_MINIMUM_TEE_DRAPEAU = 500
-VITESSE_ANGULAIRE = .0025
+DISTANCE_MINIMUM_TEE_DRAPEAU = 450
+VITESSE_ANGULAIRE = .003
 FORCE_MINIMUM = 1
 
 points = poisson_disc_sampling(90, 620, 1250, 50)

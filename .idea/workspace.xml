@@ -6,6 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="df1c2ffb-8932-4a1c-a126-83352a06ea3e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Images/Trou.png" beforeDir="false" afterPath="$PROJECT_DIR$/Images/Trou.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Musiques/ancienne-pub--carte-kiwi.mp3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Musiques/best-version-stereotypical-music-around-the-world.mp3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Musiques/the-girl-from-ipanema.mp3" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -36,6 +40,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Cyril\PycharmProjects\projet-pygame" />
       <recent name="C:\Users\Cyril\PycharmProjects\projet-pygame\Musiques" />
     </key>
   </component>
