@@ -4,8 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c3ebc785-ab60-4868-965b-d67480315faf" name="Changes" comment="">
+    <list default="true" id="df1c2ffb-8932-4a1c-a126-83352a06ea3e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Images/Trou.png" beforeDir="false" afterPath="$PROJECT_DIR$/Images/Trou.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Musiques/ancienne-pub--carte-kiwi.mp3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Musiques/best-version-stereotypical-music-around-the-world.mp3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Musiques/the-girl-from-ipanema.mp3" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -13,20 +17,13 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Script" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 2
+  &quot;associatedIndex&quot;: 7
 }</component>
-  <component name="ProjectId" id="2okk2yt2wdijIcTclhH0KXVRjXA" />
+  <component name="ProjectId" id="2rcdYX6mx1pg4gIDvurrtjDj4tE" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
   </component>
@@ -34,13 +31,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "fenetre__et__bases"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Main&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Cyril\PycharmProjects\projet-pygame" />
+      <recent name="C:\Users\Cyril\PycharmProjects\projet-pygame\Musiques" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -51,11 +54,11 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="c3ebc785-ab60-4868-965b-d67480315faf" name="Changes" comment="" />
-      <created>1731420757955</created>
+      <changelist id="df1c2ffb-8932-4a1c-a126-83352a06ea3e" name="Changes" comment="" />
+      <created>1736862345142</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1731420757955</updated>
+      <updated>1736862345142</updated>
     </task>
     <servers />
   </component>
